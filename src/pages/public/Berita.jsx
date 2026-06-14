@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Newspaper, ChevronRight, Calendar } from 'lucide-react';
+import { Newspaper, ChevronRight, Calendar, X } from 'lucide-react';
 import heroImage from '../../assets/hero.png';
 import { supabase } from '../../lib/supabase';
 
 export default function Berita() {
   const [berita, setBerita] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedBerita, setSelectedBerita] = useState(null);
 
   useEffect(() => { fetchBerita(); }, []);
 
@@ -59,7 +60,7 @@ export default function Berita() {
                     <p className="text-gray-500 text-sm leading-relaxed mb-6 flex-1 line-clamp-3">
                       {item.konten}
                     </p>
-                    <button className="flex items-center text-primary-600 font-black text-sm uppercase tracking-wider hover:text-primary-800 transition-colors group">
+                    <button onClick={() => setSelectedBerita(item)} className="flex items-center text-primary-600 font-black text-sm uppercase tracking-wider hover:text-primary-800 transition-colors group">
                       Baca Selengkapnya
                       <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                     </button>
@@ -70,6 +71,38 @@ export default function Berita() {
           )}
         </div>
       </div>
+
+      {/* Modal Detail Berita */}
+      {selectedBerita && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-[2rem] w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-2xl animate-in zoom-in-95 flex flex-col">
+            <div className="relative h-64 md:h-80 shrink-0 bg-gray-100">
+              <img src={selectedBerita.gambar_url || heroImage} alt={selectedBerita.judul} className="w-full h-full object-cover" />
+              <button 
+                onClick={() => setSelectedBerita(null)}
+                className="absolute top-4 right-4 bg-white/50 hover:bg-white/90 backdrop-blur text-gray-900 p-2 rounded-full transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="p-8 overflow-y-auto">
+              <div className="flex items-center text-gray-400 text-sm font-bold mb-4">
+                <Calendar className="w-4 h-4 mr-2" />
+                {new Date(selectedBerita.created_at).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </div>
+              
+              <h2 className="text-3xl font-black text-gray-900 mb-6 leading-tight">{selectedBerita.judul}</h2>
+              
+              <div className="prose prose-lg max-w-none text-gray-600">
+                {selectedBerita.konten.split('\n').map((paragraph, idx) => (
+                  <p key={idx} className="mb-4">{paragraph}</p>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

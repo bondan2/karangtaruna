@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Wallet, Plus, Trash2, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Wallet, Plus, Trash2, ArrowUpRight, ArrowDownRight, Edit } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 export default function KeuanganAdmin() {
   const [keuangan, setKeuangan] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ tanggal: new Date().toISOString().split('T')[0], jenis_transaksi: 'Pemasukan', kategori: '', keterangan: '', nominal: '' });
+  const defaultForm = { tanggal: new Date().toISOString().split('T')[0], jenis_transaksi: 'Pemasukan', kategori: '', keterangan: '', nominal: '' };
+  const [formData, setFormData] = useState(defaultForm);
 
   useEffect(() => { fetchKeuangan(); }, []);
 
@@ -22,12 +23,28 @@ export default function KeuanganAdmin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { error } = await supabase.from('keuangan').insert([{...formData, nominal: Number(formData.nominal)}]);
-      if (error) throw error;
+      if (formData.id) {
+        const { id, ...updateData } = formData;
+        const { error } = await supabase.from('keuangan').update({...updateData, nominal: Number(updateData.nominal)}).eq('id', id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('keuangan').insert([{...formData, nominal: Number(formData.nominal)}]);
+        if (error) throw error;
+      }
       setShowModal(false);
-      setFormData({ tanggal: new Date().toISOString().split('T')[0], jenis_transaksi: 'Pemasukan', kategori: '', keterangan: '', nominal: '' });
+      setFormData(defaultForm);
       fetchKeuangan();
     } catch (err) { alert('Gagal: ' + err.message); }
+  };
+
+  const handleEdit = (item) => {
+    setFormData(item);
+    setShowModal(true);
+  };
+
+  const handleAdd = () => {
+    setFormData(defaultForm);
+    setShowModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -48,7 +65,7 @@ export default function KeuanganAdmin() {
           </h1>
           <p className="text-gray-500 mt-1">Catat seluruh arus kas masuk dan keluar.</p>
         </div>
-        <button onClick={() => setShowModal(true)} className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-bold flex items-center shadow-lg transition-all">
+        <button onClick={handleAdd} className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-bold flex items-center shadow-lg transition-all">
           <Plus className="w-5 h-5 mr-2" /> Mutasi Baru
         </button>
       </div>
@@ -71,7 +88,7 @@ export default function KeuanganAdmin() {
                   <th className="px-6 py-4">Jenis</th>
                   <th className="px-6 py-4">Keterangan</th>
                   <th className="px-6 py-4">Nominal</th>
-                  <th className="px-6 py-4 text-right">Hapus</th>
+                  <th className="px-6 py-4 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -89,7 +106,8 @@ export default function KeuanganAdmin() {
                     <td className={`px-6 py-4 font-black ${item.jenis_transaksi === 'Pemasukan' ? 'text-green-600' : 'text-red-600'}`}>
                       {item.jenis_transaksi === 'Pemasukan' ? '+' : '-'}{formatRupiah(item.nominal)}
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-6 py-4 flex justify-end space-x-2">
+                      <button onClick={() => handleEdit(item)} className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg"><Edit className="w-5 h-5" /></button>
                       <button onClick={() => handleDelete(item.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 className="w-5 h-5" /></button>
                     </td>
                   </tr>
@@ -104,7 +122,7 @@ export default function KeuanganAdmin() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95">
             <div className="p-6 border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900">Catat Mutasi Kas Baru</h2>
+              <h2 className="text-xl font-bold text-gray-900">{formData.id ? 'Edit Transaksi Kas' : 'Catat Mutasi Kas Baru'}</h2>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="flex space-x-4">

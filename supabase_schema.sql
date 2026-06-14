@@ -122,3 +122,46 @@ CREATE TABLE dokumen (
   file_url TEXT NOT NULL,
   diunggah_pada TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
+
+-- 8. Tabel Baru untuk 7 Modul Tambahan
+CREATE TABLE pengumuman (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  isi_pengumuman TEXT NOT NULL,
+  is_aktif BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+CREATE TABLE inventaris (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  nama_barang TEXT NOT NULL,
+  jumlah INTEGER DEFAULT 1,
+  kondisi TEXT DEFAULT 'Baik',
+  lokasi_penyimpanan TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+CREATE TABLE notulen_rapat (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  judul_rapat TEXT NOT NULL,
+  tanggal DATE NOT NULL,
+  hasil_keputusan TEXT NOT NULL,
+  notulis TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+CREATE TABLE event_17_agustus (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  nama_kegiatan TEXT NOT NULL,
+  jenis_kegiatan TEXT,
+  penanggung_jawab TEXT,
+  anggaran NUMERIC DEFAULT 0,
+  status TEXT DEFAULT 'Direncanakan',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+CREATE TABLE pengaturan (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  kunci TEXT UNIQUE NOT NULL,
+  nilai TEXT NOT NULL,
+  deskripsi TEXT
+);

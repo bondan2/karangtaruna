@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { FileText, Plus, Trash2, Download } from 'lucide-react';
+import { FileText, Plus, Trash2, Download, Edit } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 export default function DokumenAdmin() {
   const [dokumen, setDokumen] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ nama_dokumen: '', kategori: 'AD/ART', file_url: '' });
+  const defaultForm = { nama_dokumen: '', kategori: 'AD/ART', file_url: '' };
+  const [formData, setFormData] = useState(defaultForm);
 
   useEffect(() => { fetchDokumen(); }, []);
 
@@ -22,14 +23,29 @@ export default function DokumenAdmin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Dalam implementasi nyata, ini akan mengupload file ke bucket Supabase Storage
-      // Saat ini kita menggunakan text input sebagai mock URL
-      const { error } = await supabase.from('dokumen').insert([{...formData, file_url: formData.file_url || 'https://example.com/doc.pdf'}]);
-      if (error) throw error;
+      const payload = {...formData, file_url: formData.file_url || 'https://example.com/doc.pdf'};
+      if (formData.id) {
+        const { id, diunggah_pada, ...updateData } = payload;
+        const { error } = await supabase.from('dokumen').update(updateData).eq('id', id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('dokumen').insert([payload]);
+        if (error) throw error;
+      }
       setShowModal(false);
-      setFormData({ nama_dokumen: '', kategori: 'AD/ART', file_url: '' });
+      setFormData(defaultForm);
       fetchDokumen();
     } catch (err) { alert('Gagal: ' + err.message); }
+  };
+
+  const handleEdit = (item) => {
+    setFormData(item);
+    setShowModal(true);
+  };
+
+  const handleAdd = () => {
+    setFormData(defaultForm);
+    setShowModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -48,7 +64,7 @@ export default function DokumenAdmin() {
           </h1>
           <p className="text-gray-500 mt-1">Manajemen AD/ART, SK, dan Laporan.</p>
         </div>
-        <button onClick={() => setShowModal(true)} className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-bold flex items-center shadow-lg transition-all">
+        <button onClick={handleAdd} className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-bold flex items-center shadow-lg transition-all">
           <Plus className="w-5 h-5 mr-2" /> Unggah Dokumen
         </button>
       </div>
@@ -80,6 +96,7 @@ export default function DokumenAdmin() {
                     <td className="px-6 py-4 text-gray-500">{new Date(item.diunggah_pada).toLocaleDateString('id-ID')}</td>
                     <td className="px-6 py-4 flex justify-end space-x-2">
                       <a href={item.file_url} target="_blank" rel="noreferrer" className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"><Download className="w-5 h-5" /></a>
+                      <button onClick={() => handleEdit(item)} className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg"><Edit className="w-5 h-5" /></button>
                       <button onClick={() => handleDelete(item.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 className="w-5 h-5" /></button>
                     </td>
                   </tr>
@@ -94,7 +111,7 @@ export default function DokumenAdmin() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95">
             <div className="p-6 border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900">Unggah Dokumen Baru</h2>
+              <h2 className="text-xl font-bold text-gray-900">{formData.id ? 'Edit Data Dokumen' : 'Unggah Dokumen Baru'}</h2>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>

@@ -1,8 +1,11 @@
-import { Building2, History, Target, Users, Network, Star, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { Building2, History, Target, Users, Network, Star, ChevronRight, ChevronDown } from 'lucide-react';
 import heroImage from '../../assets/hero.png';
 import logo from '../../assets/img/logo.png';
 
 export default function TentangKami() {
+  const [expandedDivisi, setExpandedDivisi] = useState(null);
+
   const pengurus = [
     { jabatan: 'Ketua', nama: 'Ahmad Fauzan' },
     { jabatan: 'Wakil Ketua', nama: 'Bima Sena' },
@@ -99,15 +102,34 @@ export default function TentangKami() {
             <p className="text-gray-600 mb-6">
               Struktur organisasi dirancang agar setiap divisi memiliki tugas pokok dan fungsi yang spesifik untuk melayani masyarakat.
             </p>
-            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
-              <ul className="space-y-3 font-medium text-gray-700">
-                <li className="flex items-center"><ChevronRight className="w-4 h-4 text-primary-600 mr-2"/> Majelis Pertimbangan Karang Taruna (MPKT)</li>
-                <li className="flex items-center"><ChevronRight className="w-4 h-4 text-primary-600 mr-2"/> Ketua, Sekretaris, Bendahara (KSB)</li>
-                <li className="flex items-center"><ChevronRight className="w-4 h-4 text-primary-600 mr-2"/> Bidang Usaha Kesejahteraan Sosial (UKS)</li>
-                <li className="flex items-center"><ChevronRight className="w-4 h-4 text-primary-600 mr-2"/> Bidang Lingkungan Hidup & Pariwisata</li>
-                <li className="flex items-center"><ChevronRight className="w-4 h-4 text-primary-600 mr-2"/> Bidang Olahraga & Seni Budaya</li>
-                <li className="flex items-center"><ChevronRight className="w-4 h-4 text-primary-600 mr-2"/> Bidang Kerohanian & Pembinaan Mental</li>
-              </ul>
+            <div className="bg-gray-50 rounded-2xl p-4 border border-gray-200">
+              <div className="space-y-2 font-medium text-gray-700">
+                {[
+                  { nama: 'Majelis Pertimbangan Karang Taruna (MPKT)', deskripsi: 'Dewan penasihat yang memberikan arahan, saran, dan pertimbangan kepada pengurus Karang Taruna dalam mengambil kebijakan strategis.' },
+                  { nama: 'Ketua, Sekretaris, Bendahara (KSB)', deskripsi: 'Pengurus inti (Badan Pengurus Harian) yang mengelola jalannya organisasi sehari-hari, meliputi operasional, administrasi, dan manajemen keuangan.' },
+                  { nama: 'Bidang Usaha Kesejahteraan Sosial (UKS)', deskripsi: 'Fokus pada penyelesaian masalah sosial, pemberian santunan, bantuan kebencanaan, dan program peningkatan kesejahteraan masyarakat sekitar.' },
+                  { nama: 'Bidang Lingkungan Hidup & Pariwisata', deskripsi: 'Bertanggung jawab atas program penghijauan, kerja bakti, pengelolaan bank sampah, serta pengembangan potensi pariwisata wilayah lokal.' },
+                  { nama: 'Bidang Olahraga & Seni Budaya', deskripsi: 'Mewadahi bakat dan minat pemuda di bidang olahraga (turnamen, latihan rutin) serta kesenian (tari, musik) untuk memupuk kreativitas warga.' },
+                  { nama: 'Bidang Kerohanian & Pembinaan Mental', deskripsi: 'Mengkoordinir kegiatan keagamaan, peringatan hari besar agama, majelis taklim, serta pembinaan karakter dan mental spiritual pemuda.' }
+                ].map((item, idx) => (
+                  <div key={idx} className="border border-gray-100 bg-white rounded-xl overflow-hidden transition-all duration-300 shadow-sm hover:shadow-md">
+                    <button 
+                      onClick={() => setExpandedDivisi(expandedDivisi === idx ? null : idx)}
+                      className="w-full flex items-center justify-between p-4 text-left focus:outline-none"
+                    >
+                      <span className="flex items-center font-bold text-gray-800">
+                        {expandedDivisi === idx ? <ChevronDown className="w-5 h-5 text-primary-600 mr-3 shrink-0"/> : <ChevronRight className="w-5 h-5 text-gray-400 mr-3 shrink-0"/>}
+                        {item.nama}
+                      </span>
+                    </button>
+                    {expandedDivisi === idx && (
+                      <div className="px-12 pb-4 text-sm text-gray-600 leading-relaxed animate-in slide-in-from-top-2">
+                        {item.deskripsi}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 

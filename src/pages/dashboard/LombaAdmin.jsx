@@ -5,10 +5,14 @@ import { supabase } from '../../lib/supabase';
 export default function LombaAdmin() {
   const [lombaList, setLombaList] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // State form
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ nama_lomba: '', kategori: '', tanggal_pelaksanaan: '', status: 'Pendaftaran Buka' });
+  const defaultForm = { nama_lomba: '', kategori: '', tanggal_pelaksanaan: '', status: 'Pendaftaran Buka' };
+  const [formData, setFormData] = useState(defaultForm);
+
+  // State Peserta
+  const [showPesertaModal, setShowPesertaModal] = useState(false);
+  const [pesertaList, setPesertaList] = useState([]);
+  const [selectedLombaPeserta, setSelectedLombaPeserta] = useState(null);
 
   useEffect(() => {
     fetchLomba();
@@ -30,14 +34,30 @@ export default function LombaAdmin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { error } = await supabase.from('lomba').insert([formData]);
-      if (error) throw error;
+      if (formData.id) {
+        const { id, ...updateData } = formData;
+        const { error } = await supabase.from('lomba').update(updateData).eq('id', id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('lomba').insert([formData]);
+        if (error) throw error;
+      }
       setShowModal(false);
-      setFormData({ nama_lomba: '', kategori: '', tanggal_pelaksanaan: '', status: 'Pendaftaran Buka' });
+      setFormData(defaultForm);
       fetchLomba();
     } catch (error) {
       alert('Gagal menyimpan: ' + error.message);
     }
+  };
+
+  const handleEdit = (item) => {
+    setFormData(item);
+    setShowModal(true);
+  };
+
+  const handleAdd = () => {
+    setFormData(defaultForm);
+    setShowModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -52,6 +72,18 @@ export default function LombaAdmin() {
     }
   };
 
+  const handleViewPeserta = async (lomba) => {
+    try {
+      setSelectedLombaPeserta(lomba);
+      setShowPesertaModal(true);
+      const { data, error } = await supabase.from('peserta_lomba').select('*').eq('lomba_id', lomba.id);
+      if (error) throw error;
+      setPesertaList(data || []);
+    } catch (err) {
+      alert('Gagal memuat peserta: ' + err.message);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
@@ -62,7 +94,7 @@ export default function LombaAdmin() {
           <p className="text-gray-500 mt-1">Kelola data perlombaan dan pendaftaran peserta.</p>
         </div>
         <button 
-          onClick={() => setShowModal(true)}
+          onClick={handleAdd}
           className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-bold flex items-center shadow-lg shadow-primary-600/30 transition-all"
         >
           <Plus className="w-5 h-5 mr-2" /> Tambah Lomba
@@ -106,8 +138,8 @@ export default function LombaAdmin() {
                       </span>
                     </td>
                     <td className="px-6 py-4 flex justify-end space-x-2">
-                      <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"><Users className="w-5 h-5" /></button>
-                      <button className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg"><Edit className="w-5 h-5" /></button>
+                      <button onClick={() => handleViewPeserta(item)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg" title="Lihat Pendaftar"><Users className="w-5 h-5" /></button>
+                      <button onClick={() => handleEdit(item)} className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg"><Edit className="w-5 h-5" /></button>
                       <button onClick={() => handleDelete(item.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 className="w-5 h-5" /></button>
                     </td>
                   </tr>
@@ -123,7 +155,7 @@ export default function LombaAdmin() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95">
             <div className="p-6 border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900">Buat Lomba Baru</h2>
+              <h2 className="text-xl font-bold text-gray-900">{formData.id ? 'Edit Lomba' : 'Buat Lomba Baru'}</h2>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
@@ -139,11 +171,67 @@ export default function LombaAdmin() {
                 <input required type="date" value={formData.tanggal_pelaksanaan} onChange={e => setFormData({...formData, tanggal_pelaksanaan: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
               </div>
               
+              {formData.id && (
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Status Lomba</label>
+                  <select value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none font-bold">
+                    <option value="Pendaftaran Buka">Pendaftaran Buka</option>
+                    <option value="Sedang Berjalan">Sedang Berjalan</option>
+                    <option value="Selesai">Telah Selesai</option>
+                  </select>
+                </div>
+              )}
+              
               <div className="pt-4 flex space-x-3">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200">Batal</button>
                 <button type="submit" className="flex-1 px-4 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 shadow-lg shadow-primary-600/30">Simpan Lomba</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Lihat Peserta */}
+      {showPesertaModal && selectedLombaPeserta && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <div>
+                <h2 className="text-xl font-black text-gray-900 leading-tight">Daftar Pendaftar Lomba</h2>
+                <p className="text-sm font-bold text-gray-500 mt-1">{selectedLombaPeserta.nama_lomba}</p>
+              </div>
+              <button onClick={() => setShowPesertaModal(false)} className="px-4 py-2 bg-white text-gray-600 font-bold border border-gray-200 rounded-xl hover:bg-gray-100">
+                Tutup
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-0">
+              {pesertaList.length === 0 ? (
+                <div className="p-12 text-center">
+                  <Users className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-gray-800">Belum Ada Pendaftar</h3>
+                </div>
+              ) : (
+                <table className="w-full text-left">
+                  <thead className="bg-white sticky top-0 shadow-sm text-gray-500 text-xs uppercase font-bold tracking-wider">
+                    <tr>
+                      <th className="px-6 py-4">Nama Lengkap</th>
+                      <th className="px-6 py-4">Kontak (WA)</th>
+                      <th className="px-6 py-4">Asal RT/RW</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {pesertaList.map((p, i) => (
+                      <tr key={p.id} className={i % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'}>
+                        <td className="px-6 py-4 font-bold text-gray-900">{p.nama_peserta}</td>
+                        <td className="px-6 py-4 text-gray-600 font-medium">{p.kontak}</td>
+                        <td className="px-6 py-4 text-gray-600">{p.asal_rt_rw}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
         </div>
       )}

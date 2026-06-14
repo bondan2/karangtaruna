@@ -6,7 +6,8 @@ export default function SuratMenyuratAdmin() {
   const [surat, setSurat] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ nomor_surat: '', jenis_surat: 'Masuk', tanggal_surat: '', perihal: '', pengirim_penerima: '' });
+  const defaultForm = { nomor_surat: '', jenis_surat: 'Masuk', tanggal_surat: '', perihal: '', pengirim_penerima: '' };
+  const [formData, setFormData] = useState(defaultForm);
 
   useEffect(() => { fetchSurat(); }, []);
 
@@ -22,12 +23,28 @@ export default function SuratMenyuratAdmin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { error } = await supabase.from('surat_menyurat').insert([formData]);
-      if (error) throw error;
+      if (formData.id) {
+        const { id, created_at, ...updateData } = formData;
+        const { error } = await supabase.from('surat_menyurat').update(updateData).eq('id', id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('surat_menyurat').insert([formData]);
+        if (error) throw error;
+      }
       setShowModal(false);
-      setFormData({ nomor_surat: '', jenis_surat: 'Masuk', tanggal_surat: '', perihal: '', pengirim_penerima: '' });
+      setFormData(defaultForm);
       fetchSurat();
     } catch (err) { alert('Gagal: ' + err.message); }
+  };
+
+  const handleEdit = (item) => {
+    setFormData(item);
+    setShowModal(true);
+  };
+
+  const handleAdd = () => {
+    setFormData(defaultForm);
+    setShowModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -46,7 +63,7 @@ export default function SuratMenyuratAdmin() {
           </h1>
           <p className="text-gray-500 mt-1">Sistem pengarsipan digital surat masuk dan keluar.</p>
         </div>
-        <button onClick={() => setShowModal(true)} className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-bold flex items-center shadow-lg transition-all">
+        <button onClick={handleAdd} className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-bold flex items-center shadow-lg transition-all">
           <Plus className="w-5 h-5 mr-2" /> Arsip Baru
         </button>
       </div>
@@ -85,6 +102,7 @@ export default function SuratMenyuratAdmin() {
                       <span className="text-sm font-medium text-gray-600">{item.pengirim_penerima}</span>
                     </td>
                     <td className="px-6 py-4 flex justify-end space-x-2">
+                      <button onClick={() => handleEdit(item)} className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg"><Edit className="w-5 h-5" /></button>
                       <button onClick={() => handleDelete(item.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 className="w-5 h-5" /></button>
                     </td>
                   </tr>
@@ -99,7 +117,7 @@ export default function SuratMenyuratAdmin() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl animate-in zoom-in-95">
             <div className="p-6 border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900">Arsipkan Surat Baru</h2>
+              <h2 className="text-xl font-bold text-gray-900">{formData.id ? 'Edit Arsip Surat' : 'Arsipkan Surat Baru'}</h2>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="flex space-x-4">

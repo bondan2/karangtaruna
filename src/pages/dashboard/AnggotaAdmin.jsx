@@ -6,7 +6,8 @@ export default function AnggotaAdmin() {
   const [anggota, setAnggota] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ nama_lengkap: '', nik: '', alamat: '', status_aktif: true });
+  const defaultForm = { nama_lengkap: '', nik: '', alamat: '', status_aktif: true };
+  const [formData, setFormData] = useState(defaultForm);
 
   useEffect(() => { fetchAnggota(); }, []);
 
@@ -26,14 +27,30 @@ export default function AnggotaAdmin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { error } = await supabase.from('anggota').insert([formData]);
-      if (error) throw error;
+      if (formData.id) {
+        const { id, ...updateData } = formData;
+        const { error } = await supabase.from('anggota').update(updateData).eq('id', id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('anggota').insert([formData]);
+        if (error) throw error;
+      }
       setShowModal(false);
-      setFormData({ nama_lengkap: '', nik: '', alamat: '', status_aktif: true });
+      setFormData(defaultForm);
       fetchAnggota();
     } catch (err) {
       alert('Gagal menyimpan: ' + err.message);
     }
+  };
+
+  const handleEdit = (item) => {
+    setFormData(item);
+    setShowModal(true);
+  };
+
+  const handleAdd = () => {
+    setFormData(defaultForm);
+    setShowModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -54,7 +71,7 @@ export default function AnggotaAdmin() {
           <p className="text-gray-500 mt-1">Kelola data keanggotaan Karang Taruna.</p>
         </div>
         <button 
-          onClick={() => setShowModal(true)}
+          onClick={handleAdd}
           className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-bold flex items-center shadow-lg shadow-primary-600/30 transition-all"
         >
           <Plus className="w-5 h-5 mr-2" /> Tambah Anggota
@@ -95,7 +112,7 @@ export default function AnggotaAdmin() {
                       }
                     </td>
                     <td className="px-6 py-4 flex justify-end space-x-2">
-                      <button className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg"><Edit className="w-5 h-5" /></button>
+                      <button onClick={() => handleEdit(item)} className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg"><Edit className="w-5 h-5" /></button>
                       <button onClick={() => handleDelete(item.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 className="w-5 h-5" /></button>
                     </td>
                   </tr>
@@ -110,7 +127,7 @@ export default function AnggotaAdmin() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95">
             <div className="p-6 border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900">Registrasi Anggota Baru</h2>
+              <h2 className="text-xl font-bold text-gray-900">{formData.id ? 'Edit Data Anggota' : 'Registrasi Anggota Baru'}</h2>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
@@ -125,6 +142,16 @@ export default function AnggotaAdmin() {
                 <label className="block text-sm font-bold text-gray-700 mb-1">Alamat Domisili</label>
                 <textarea required rows="3" value={formData.alamat} onChange={e => setFormData({...formData, alamat: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none"></textarea>
               </div>
+              
+              {formData.id && (
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Status Keanggotaan</label>
+                  <select value={formData.status_aktif} onChange={e => setFormData({...formData, status_aktif: e.target.value === 'true'})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none">
+                    <option value="true">Aktif</option>
+                    <option value="false">Non-aktif</option>
+                  </select>
+                </div>
+              )}
               
               <div className="pt-4 flex space-x-3">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl">Batal</button>
