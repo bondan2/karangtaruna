@@ -233,3 +233,17 @@ CREATE TABLE activity_log (
   ip_address TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
+
+-- 13. Tabel Sponsor / Donatur
+CREATE TABLE sponsor (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  nama_sponsor TEXT NOT NULL,
+  kontak_person TEXT,
+  nomor_telepon TEXT,
+  bentuk_dukungan TEXT, -- Dana, Barang, Jasa
+  nominal NUMERIC DEFAULT 0,
+  logo_url TEXT,
+  keterangan TEXT,
+  status_aktif BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);

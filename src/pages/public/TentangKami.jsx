@@ -1,17 +1,74 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Building2, History, Target, Users, Network, Star, ChevronRight, ChevronDown } from 'lucide-react';
 import heroImage from '../../assets/hero.png';
 import logo from '../../assets/img/logo.png';
+import { supabase } from '../../lib/supabase';
 
 export default function TentangKami() {
   const [expandedDivisi, setExpandedDivisi] = useState(null);
+  const [profil, setProfil] = useState({
+    profil_organisasi: 'Karang Taruna Bina Pemuda adalah organisasi sosial kemasyarakatan yang dibentuk sebagai wadah pembinaan dan pengembangan generasi muda. Kami berkedudukan di wilayah Desa/Kelurahan, tumbuh atas dasar kesadaran dan tanggung jawab sosial dari, oleh, dan untuk masyarakat.',
+    sejarah: 'Didirikan oleh para pemuda desa yang memiliki kepedulian tinggi terhadap kesejahteraan dan kemajuan lingkungan. Sejak awal berdirinya, organisasi ini telah menjadi motor penggerak dalam berbagai kegiatan sosial, olahraga, kesenian, hingga pemberdayaan ekonomi mikro bagi pemuda sekitar.',
+    visi: '"Mewujudkan Pemuda yang Mandiri, Tangguh, Berkarakter, dan Berdaya Saing Global demi Terwujudnya Kesejahteraan Sosial Masyarakat."',
+    misi: [
+      'Menumbuhkembangkan kesadaran dan tanggung jawab sosial generasi muda.',
+      'Meningkatkan kapasitas dan kompetensi pemuda melalui pelatihan dan pendidikan vokasi.',
+      'Mendorong jiwa kewirausahaan (entrepreneurship) di kalangan pemuda.',
+      'Melestarikan nilai-nilai seni, budaya, dan tradisi lokal.',
+      'Memperkuat solidaritas dan gotong royong antar warga masyarakat.'
+    ]
+  });
 
-  const pengurus = [
-    { jabatan: 'Ketua', nama: 'Ahmad Fauzan' },
-    { jabatan: 'Wakil Ketua', nama: 'Bima Sena' },
-    { jabatan: 'Sekretaris', nama: 'Siti Aminah' },
-    { jabatan: 'Bendahara', nama: 'Dewi Lestari' },
-  ];
+  const [pengurus, setPengurus] = useState([]);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      // Fetch Profil
+      const { data: dbProfil } = await supabase.from('profil_website').select('*').single();
+      if (dbProfil) {
+        setProfil({
+          profil_organisasi: dbProfil.tentang_kami || profil.profil_organisasi,
+          sejarah: dbProfil.sejarah || profil.sejarah,
+          visi: dbProfil.visi || profil.visi,
+          misi: dbProfil.misi ? dbProfil.misi.split('\n').filter(m => m.trim() !== '') : profil.misi
+        });
+      }
+
+      // Fetch Kepengurusan (Top 4 only)
+      const { data: dbPengurus } = await supabase
+        .from('kepengurusan')
+        .select(`
+          id,
+          anggota:anggota_id(nama_lengkap, foto_url),
+          jabatan:jabatan_id(nama_jabatan, urutan)
+        `)
+        .eq('is_aktif', true)
+        .order('jabatan(urutan)', { ascending: true })
+        .limit(4);
+
+      if (dbPengurus && dbPengurus.length > 0) {
+        setPengurus(dbPengurus.map(p => ({
+          nama: p.anggota?.nama_lengkap || 'Belum Diatur',
+          jabatan: p.jabatan?.nama_jabatan || 'Anggota',
+          fotoUrl: p.anggota?.foto_url || null
+        })));
+      } else {
+        // Default if empty
+        setPengurus([
+          { jabatan: 'Ketua', nama: 'Ahmad Fauzan', fotoUrl: null },
+          { jabatan: 'Wakil Ketua', nama: 'Bima Sena', fotoUrl: null },
+          { jabatan: 'Sekretaris', nama: 'Siti Aminah', fotoUrl: null },
+          { jabatan: 'Bendahara', nama: 'Dewi Lestari', fotoUrl: null },
+        ]);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen pb-20">
@@ -35,8 +92,8 @@ export default function TentangKami() {
               <Building2 className="w-7 h-7 text-primary-600 group-hover:text-white transition-colors" />
             </div>
             <h2 className="text-2xl font-black text-gray-900 uppercase mb-4">Profil Organisasi</h2>
-            <p className="text-gray-600 leading-relaxed text-justify">
-              Karang Taruna Bina Pemuda adalah organisasi sosial kemasyarakatan yang dibentuk sebagai wadah pembinaan dan pengembangan generasi muda. Kami berkedudukan di wilayah Desa/Kelurahan, tumbuh atas dasar kesadaran dan tanggung jawab sosial dari, oleh, dan untuk masyarakat.
+            <p className="text-gray-600 leading-relaxed text-justify whitespace-pre-wrap">
+              {profil.profil_organisasi}
             </p>
           </div>
 
@@ -46,8 +103,8 @@ export default function TentangKami() {
               <History className="w-7 h-7 text-yellow-600 group-hover:text-white transition-colors" />
             </div>
             <h2 className="text-2xl font-black text-gray-900 uppercase mb-4">Sejarah Singkat</h2>
-            <p className="text-gray-600 leading-relaxed text-justify">
-              Didirikan oleh para pemuda desa yang memiliki kepedulian tinggi terhadap kesejahteraan dan kemajuan lingkungan. Sejak awal berdirinya, organisasi ini telah menjadi motor penggerak dalam berbagai kegiatan sosial, olahraga, kesenian, hingga pemberdayaan ekonomi mikro bagi pemuda sekitar.
+            <p className="text-gray-600 leading-relaxed text-justify whitespace-pre-wrap">
+              {profil.sejarah}
             </p>
           </div>
         </div>
@@ -65,20 +122,14 @@ export default function TentangKami() {
                 <Target className="absolute -right-4 -bottom-4 w-32 h-32 text-primary-100 opacity-50" />
                 <h3 className="text-primary-700 font-bold uppercase tracking-widest mb-4 relative z-10">Visi Kami</h3>
                 <p className="text-xl font-bold text-gray-900 leading-snug relative z-10">
-                  "Mewujudkan Pemuda yang Mandiri, Tangguh, Berkarakter, dan Berdaya Saing Global demi Terwujudnya Kesejahteraan Sosial Masyarakat."
+                  {profil.visi}
                 </p>
               </div>
             </div>
             <div className="md:col-span-3">
               <h3 className="text-gray-900 font-bold uppercase tracking-widest mb-4">Misi Kami</h3>
               <ul className="space-y-4">
-                {[
-                  'Menumbuhkembangkan kesadaran dan tanggung jawab sosial generasi muda.',
-                  'Meningkatkan kapasitas dan kompetensi pemuda melalui pelatihan dan pendidikan vokasi.',
-                  'Mendorong jiwa kewirausahaan (entrepreneurship) di kalangan pemuda.',
-                  'Melestarikan nilai-nilai seni, budaya, dan tradisi lokal.',
-                  'Memperkuat solidaritas dan gotong royong antar warga masyarakat.'
-                ].map((item, idx) => (
+                {profil.misi.map((item, idx) => (
                   <li key={idx} className="flex items-start">
                     <div className="flex-shrink-0 w-6 h-6 rounded-full bg-yellow-400 flex items-center justify-center text-white font-bold text-xs mt-0.5 mr-3">
                       {idx + 1}
@@ -143,8 +194,11 @@ export default function TentangKami() {
               {pengurus.map((org, idx) => (
                 <div key={idx} className="bg-gray-50 rounded-2xl p-4 text-center border border-gray-100 hover:border-primary-300 hover:shadow-md transition-all">
                   <div className="w-16 h-16 mx-auto bg-gray-200 rounded-full mb-3 flex items-center justify-center text-gray-400 overflow-hidden">
-                    {/* Placeholder image */}
-                    <Users className="w-8 h-8" />
+                    {org.fotoUrl ? (
+                      <img src={org.fotoUrl} alt={org.nama} className="w-full h-full object-cover" />
+                    ) : (
+                      <Users className="w-8 h-8" />
+                    )}
                   </div>
                   <h4 className="font-bold text-gray-900 text-sm">{org.nama}</h4>
                   <p className="text-xs text-primary-600 font-bold uppercase mt-1">{org.jabatan}</p>

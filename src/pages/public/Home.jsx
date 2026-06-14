@@ -4,19 +4,108 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import logo from '../../assets/img/logo.png';
 import heroImage from '../../assets/hero.png';
+import { supabase } from '../../lib/supabase';
 
 export default function Home() {
   const [berita, setBerita] = useState([]);
   const [agenda, setAgenda] = useState([]);
   const [berkas, setBerkas] = useState([]);
-  const [layanan, setLayanan] = useState([]);
-  const [sambutan, setSambutan] = useState(null); // null means no data yet
+  const [layanan, setLayanan] = useState([
+    { nama: 'Ambulans Desa', url: '#' },
+    { nama: 'Pemadam Kebakaran', url: '#' },
+    { nama: 'Polsek Terdekat', url: '#' }
+  ]);
+  const [sambutan, setSambutan] = useState(null);
   const [sosmed, setSosmed] = useState(null);
   const [statistik, setStatistik] = useState({ anggota: 0, kegiatan: 0, program: 0, prestasi: 0 });
 
   useEffect(() => {
-    // In future, fetch from Supabase here
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      // 1. Fetch Top 4 Berita
+      const { data: dbBerita } = await supabase.from('berita')
+        .select('*').eq('is_published', true).order('created_at', { ascending: false }).limit(4);
+      
+      if (dbBerita) {
+        setBerita(dbBerita.map(b => ({
+          judul: b.judul,
+          kategori: 'Berita',
+          tanggal: new Date(b.created_at).toLocaleDateString('id-ID'),
+          ringkasan: b.konten,
+          image: b.gambar_url
+        })));
+      }
+
+      // 2. Fetch Top 4 Agenda Upcoming
+      const today = new Date().toISOString().split('T')[0];
+      const { data: dbAgenda } = await supabase.from('agenda')
+        .select('*').gte('tanggal', today).order('tanggal', { ascending: true }).limit(4);
+      
+      if (dbAgenda) {
+        setAgenda(dbAgenda.map(a => {
+          const d = new Date(a.tanggal);
+          return {
+            date: d.getDate(),
+            month: d.toLocaleString('id-ID', { month: 'short' }),
+            title: a.nama_acara,
+            time: a.waktu || 'TBD'
+          };
+        }));
+      }
+
+      // 3. Fetch Berkas / Dokumen (Top 5)
+      const { data: dbBerkas } = await supabase.from('dokumen')
+        .select('*').order('diunggah_pada', { ascending: false }).limit(5);
+      
+      if (dbBerkas) {
+        setBerkas(dbBerkas.map(d => ({
+          nama: d.nama_dokumen,
+          format: 'PDF/File',
+          tanggal: new Date(d.diunggah_pada).toLocaleDateString('id-ID'),
+          url: d.file_url
+        })));
+      }
+
+      // 4. Fetch Sambutan
+      const { data: dbProfil } = await supabase.from('profil_website').select('*').single();
+      if (dbProfil && dbProfil.sambutan_ketua) {
+        setSambutan({
+          nama: dbProfil.nama_ketua || 'Ketua Karang Taruna',
+          fotoUrl: dbProfil.foto_ketua_url,
+          teks: dbProfil.sambutan_ketua.split('\n').filter(t => t.trim() !== '')
+        });
+      }
+
+      // 5. Fetch Sosmed
+      const { data: dbSosmed } = await supabase.from('media_sosial').select('*').single();
+      if (dbSosmed) {
+        setSosmed({
+          instagram: dbSosmed.instagram || '',
+          youtubeVideos: dbSosmed.youtube ? [dbSosmed.youtube] : []
+        });
+      }
+
+      // 6. Fetch Statistik (Count)
+      const [{ count: cAnggota }, { count: cProgram }, { count: cEvent }] = await Promise.all([
+        supabase.from('anggota').select('*', { count: 'exact', head: true }),
+        supabase.from('program_kerja').select('*', { count: 'exact', head: true }),
+        supabase.from('event_17_agustus').select('*', { count: 'exact', head: true })
+      ]);
+      
+      setStatistik({
+        anggota: cAnggota || 0,
+        kegiatan: cEvent || 0,
+        program: cProgram || 0,
+        prestasi: 12 // Hardcode for now
+      });
+
+    } catch (error) {
+      console.error('Gagal fetch data Home:', error);
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f0f2f5] relative">

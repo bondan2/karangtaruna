@@ -1,8 +1,52 @@
+import { useState, useEffect } from 'react';
 import { MapPin, Phone, Mail, Clock, Send } from 'lucide-react';
 import { FaInstagram, FaYoutube } from 'react-icons/fa';
 import heroImage from '../../assets/hero.png';
+import { supabase } from '../../lib/supabase';
 
 export default function Kontak() {
+  const [kontak, setKontak] = useState({
+    alamat: 'Jl. Raya Pondok Betung, Rt.001/05, Kel. Pondok Betung, Kec. Pondok Aren, Kota Tangerang Selatan, Banten',
+    telepon: '0812-XXXX-XXXX',
+    email: 'info@katarpondokbetung.org'
+  });
+  
+  const [sosmed, setSosmed] = useState({
+    instagram: '',
+    youtube: ''
+  });
+
+  useEffect(() => {
+    fetchKontak();
+  }, []);
+
+  const fetchKontak = async () => {
+    try {
+      const { data: dbKontak } = await supabase.from('kontak').select('*').single();
+      if (dbKontak) {
+        setKontak({
+          alamat: dbKontak.alamat_sekretariat || kontak.alamat,
+          telepon: dbKontak.nomor_telepon || kontak.telepon,
+          email: dbKontak.email || kontak.email
+        });
+      }
+
+      const { data: dbSosmed } = await supabase.from('media_sosial').select('*').single();
+      if (dbSosmed) {
+        setSosmed({
+          instagram: dbSosmed.instagram || '',
+          youtube: dbSosmed.youtube || ''
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleKirimPesan = (e) => {
+    e.preventDefault();
+    alert('Pesan Anda telah direkam. (Fitur ini dapat dihubungkan dengan WhatsApp API / Email SMTP)');
+  };
   return (
     <div className="bg-gray-50 min-h-screen pb-20">
       {/* Header Banner */}
@@ -30,7 +74,7 @@ export default function Kontak() {
                   </div>
                   <div>
                     <h4 className="font-bold text-gray-900">Alamat Lengkap</h4>
-                    <p className="text-gray-600 text-sm mt-1">Jl. Raya Pondok Betung, Rt.001/05, Kel. Pondok Betung, Kec. Pondok Aren, Kota Tangerang Selatan, Banten</p>
+                    <p className="text-gray-600 text-sm mt-1">{kontak.alamat}</p>
                   </div>
                 </li>
                 
@@ -40,7 +84,7 @@ export default function Kontak() {
                   </div>
                   <div>
                     <h4 className="font-bold text-gray-900">Telepon / WhatsApp</h4>
-                    <p className="text-gray-600 text-sm mt-1">0812-XXXX-XXXX</p>
+                    <p className="text-gray-600 text-sm mt-1">{kontak.telepon}</p>
                   </div>
                 </li>
 
@@ -50,7 +94,7 @@ export default function Kontak() {
                   </div>
                   <div>
                     <h4 className="font-bold text-gray-900">Email</h4>
-                    <p className="text-gray-600 text-sm mt-1">info@katarpondokbetung.org</p>
+                    <p className="text-gray-600 text-sm mt-1">{kontak.email}</p>
                   </div>
                 </li>
               </ul>
@@ -60,12 +104,16 @@ export default function Kontak() {
             <div className="bg-primary-900 rounded-3xl p-8 shadow-xl text-white">
               <h2 className="text-xl font-black uppercase mb-4 text-yellow-400">Ikuti Sosial Media Kami</h2>
               <div className="flex space-x-4">
-                <a href="#" className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors">
-                  <FaInstagram className="w-6 h-6 text-white" />
-                </a>
-                <a href="#" className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors">
-                  <FaYoutube className="w-6 h-6 text-white" />
-                </a>
+                {sosmed.instagram && (
+                  <a href={`https://instagram.com/${sosmed.instagram.replace('@', '')}`} target="_blank" rel="noreferrer" className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors">
+                    <FaInstagram className="w-6 h-6 text-white" />
+                  </a>
+                )}
+                {sosmed.youtube && (
+                  <a href={sosmed.youtube} target="_blank" rel="noreferrer" className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors">
+                    <FaYoutube className="w-6 h-6 text-white" />
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -76,7 +124,7 @@ export default function Kontak() {
               <h2 className="text-2xl font-black text-gray-900 uppercase mb-2">Kirim Pesan</h2>
               <p className="text-gray-500 mb-8">Punya pertanyaan, saran, atau ajakan kerja sama? Silakan tinggalkan pesan melalui formulir di bawah ini.</p>
               
-              <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+              <form className="space-y-6" onSubmit={handleKirimPesan}>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">Nama Lengkap</label>

@@ -26,15 +26,12 @@ import PengumumanAdmin from './pages/dashboard/PengumumanAdmin';
 import AgendaAdmin from './pages/dashboard/AgendaAdmin';
 import AnggotaAdmin from './pages/dashboard/AnggotaAdmin';
 import AbsensiAdmin from './pages/dashboard/AbsensiAdmin';
-import ProgramKerjaAdmin from './pages/dashboard/ProgramKerjaAdmin';
 import SuratMenyuratAdmin from './pages/dashboard/SuratMenyuratAdmin';
 import NotulenRapatAdmin from './pages/dashboard/NotulenRapatAdmin';
 import KeuanganAdmin from './pages/dashboard/KeuanganAdmin';
 import InventarisAdmin from './pages/dashboard/InventarisAdmin';
-import DokumenAdmin from './pages/dashboard/DokumenAdmin';
 import LombaAdmin from './pages/dashboard/LombaAdmin';
 import Event17AgustusAdmin from './pages/dashboard/Event17AgustusAdmin';
-import GaleriAdmin from './pages/dashboard/GaleriAdmin';
 import PengaturanAdmin from './pages/dashboard/PengaturanAdmin';
 import UnderConstruction from './pages/dashboard/UnderConstruction';
 
@@ -55,6 +52,21 @@ import SystemUserAdmin from './pages/dashboard/SystemUserAdmin';
 import SystemRoleAdmin from './pages/dashboard/SystemRoleAdmin';
 import SystemActivityLogAdmin from './pages/dashboard/SystemActivityLogAdmin';
 import SystemBackupAdmin from './pages/dashboard/SystemBackupAdmin';
+
+// Bendahara (Keuangan) Phase 2
+import SponsorAdmin from './pages/dashboard/SponsorAdmin';
+import KeuanganTransaksi from './pages/dashboard/KeuanganTransaksi';
+import KeuanganLaporan from './pages/dashboard/KeuanganLaporan';
+import KeuanganAnggaran from './pages/dashboard/KeuanganAnggaran';
+
+// Sekretaris & Operasional Phase 3
+import PublikasiAdmin from './pages/dashboard/PublikasiAdmin';
+import GaleriAdmin from './pages/dashboard/GaleriAdmin';
+import SuratAdmin from './pages/dashboard/SuratAdmin';
+import DokumenAdmin from './pages/dashboard/DokumenAdmin';
+import ProgramKerjaAdmin from './pages/dashboard/ProgramKerjaAdmin';
+import EventLombaAdmin from './pages/dashboard/EventLombaAdmin';
+import NotulenAdmin from './pages/dashboard/NotulenAdmin';
 
 function App() {
   return (
@@ -113,6 +125,57 @@ function App() {
           <Route path="sistem-audit-log" element={<SystemActivityLogAdmin />} />
           <Route path="sistem-backup" element={<SystemBackupAdmin />} />
           <Route path="sistem-restore" element={<SystemBackupAdmin />} />
+          
+          {/* Rute Bendahara (Keuangan) */}
+          <Route path="iuran" element={<KeuanganTransaksi jenisTransaksi="Pemasukan" kategori="Iuran Anggota" />} />
+          <Route path="donasi" element={<KeuanganTransaksi jenisTransaksi="Pemasukan" kategori="Donasi" />} />
+          <Route path="pemasukan-sponsor" element={<KeuanganTransaksi jenisTransaksi="Pemasukan" kategori="Sponsor" />} />
+          <Route path="pendapatan-event" element={<KeuanganTransaksi jenisTransaksi="Pemasukan" kategori="Pendapatan Event" />} />
+          
+          <Route path="operasional" element={<KeuanganTransaksi jenisTransaksi="Pengeluaran" kategori="Operasional" />} />
+          <Route path="pengeluaran-kegiatan" element={<KeuanganTransaksi jenisTransaksi="Pengeluaran" kategori="Kegiatan" />} />
+          <Route path="pengeluaran-inventaris" element={<KeuanganTransaksi jenisTransaksi="Pengeluaran" kategori="Inventaris" />} />
+          <Route path="pengeluaran-lainnya" element={<KeuanganTransaksi jenisTransaksi="Pengeluaran" kategori="Lainnya" />} />
+          
+          <Route path="anggaran-proker" element={<KeuanganAnggaran tipe="Proker" />} />
+          <Route path="anggaran-event" element={<KeuanganAnggaran tipe="Event" />} />
+          <Route path="anggaran-proposal" element={<KeuanganAnggaran tipe="Proposal" />} />
+          
+          <Route path="laporan-harian" element={<KeuanganLaporan rentang="Harian" />} />
+          <Route path="laporan-bulanan" element={<KeuanganLaporan rentang="Bulanan" />} />
+          <Route path="laporan-tahunan" element={<KeuanganLaporan rentang="Tahunan" />} />
+          <Route path="rekap-kas" element={<KeuanganLaporan rentang="Rekap Kas" />} />
+          <Route path="keuangan" element={<KeuanganLaporan rentang="Rekap Kas" />} />
+          
+          <Route path="sponsor" element={<SponsorAdmin />} />
+          
+          {/* Rute Sekretaris & Operasional (Phase 3) */}
+          <Route path="berita" element={<PublikasiAdmin tipe="Berita" />} />
+          <Route path="pengumuman" element={<PublikasiAdmin tipe="Pengumuman" />} />
+          <Route path="agenda" element={<PublikasiAdmin tipe="Agenda" />} />
+          <Route path="galeri" element={<GaleriAdmin />} />
+          <Route path="dokumentasi" element={<GaleriAdmin />} />
+          
+          <Route path="surat-masuk" element={<SuratAdmin jenisSurat="Masuk" />} />
+          <Route path="surat-keluar" element={<SuratAdmin jenisSurat="Keluar" />} />
+          <Route path="nomor-surat" element={<SuratAdmin jenisSurat="Nomor Surat" />} />
+          <Route path="surat-menyurat" element={<SuratAdmin jenisSurat="Nomor Surat" />} />
+          
+          <Route path="notulen-rapat" element={<NotulenAdmin />} />
+          
+          <Route path="dokumen" element={<DokumenAdmin kategoriDokumen="Semua" />} />
+          <Route path="dokumen-publik" element={<DokumenAdmin kategoriDokumen="Semua" />} />
+          <Route path="proposal" element={<DokumenAdmin kategoriDokumen="Proposal" />} />
+          <Route path="lpj" element={<DokumenAdmin kategoriDokumen="LPJ" />} />
+          <Route path="sk" element={<DokumenAdmin kategoriDokumen="SK" />} />
+          <Route path="ad-art" element={<DokumenAdmin kategoriDokumen="AD/ART" />} />
+          <Route path="laporan-kegiatan" element={<DokumenAdmin kategoriDokumen="Laporan Kegiatan" />} />
+          
+          <Route path="program-kerja" element={<ProgramKerjaAdmin />} />
+          
+          <Route path="event" element={<EventLombaAdmin tipe="Event" />} />
+          <Route path="lomba" element={<EventLombaAdmin tipe="Lomba" />} />
+          <Route path="peserta" element={<EventLombaAdmin tipe="Peserta" />} />
           
           <Route path="*" element={<UnderConstruction />} />
         </Route>
