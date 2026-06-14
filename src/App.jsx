@@ -36,6 +36,25 @@ import LombaAdmin from './pages/dashboard/LombaAdmin';
 import Event17AgustusAdmin from './pages/dashboard/Event17AgustusAdmin';
 import GaleriAdmin from './pages/dashboard/GaleriAdmin';
 import PengaturanAdmin from './pages/dashboard/PengaturanAdmin';
+import UnderConstruction from './pages/dashboard/UnderConstruction';
+
+// Master Data Phase 1
+import PeriodeAdmin from './pages/dashboard/PeriodeAdmin';
+import JabatanAdmin from './pages/dashboard/JabatanAdmin';
+import KepengurusanAdmin from './pages/dashboard/KepengurusanAdmin';
+
+// Website Config Phase 1
+import BannerWebsiteAdmin from './pages/dashboard/BannerWebsiteAdmin';
+import ProfilWebsiteAdmin from './pages/dashboard/ProfilWebsiteAdmin';
+import KontakAdmin from './pages/dashboard/KontakAdmin';
+import MediaSosialAdmin from './pages/dashboard/MediaSosialAdmin';
+import FooterAdmin from './pages/dashboard/FooterAdmin';
+
+// System Admin (IT) Phase 1B
+import SystemUserAdmin from './pages/dashboard/SystemUserAdmin';
+import SystemRoleAdmin from './pages/dashboard/SystemRoleAdmin';
+import SystemActivityLogAdmin from './pages/dashboard/SystemActivityLogAdmin';
+import SystemBackupAdmin from './pages/dashboard/SystemBackupAdmin';
 
 function App() {
   return (
@@ -65,6 +84,9 @@ function App() {
           <Route path="pengumuman" element={<PengumumanAdmin />} />
           <Route path="agenda" element={<AgendaAdmin />} />
           <Route path="anggota" element={<AnggotaAdmin />} />
+          <Route path="periode" element={<PeriodeAdmin />} />
+          <Route path="jabatan" element={<JabatanAdmin />} />
+          <Route path="kepengurusan" element={<KepengurusanAdmin />} />
           <Route path="absensi" element={<AbsensiAdmin />} />
           <Route path="program-kerja" element={<ProgramKerjaAdmin />} />
           <Route path="surat-menyurat" element={<SuratMenyuratAdmin />} />
@@ -73,9 +95,26 @@ function App() {
           <Route path="inventaris" element={<InventarisAdmin />} />
           <Route path="dokumen" element={<DokumenAdmin />} />
           <Route path="lomba" element={<LombaAdmin />} />
+          <Route path="event" element={<Event17AgustusAdmin />} />
           <Route path="event-17-agustus" element={<Event17AgustusAdmin />} />
           <Route path="galeri" element={<GaleriAdmin />} />
           <Route path="pengaturan" element={<PengaturanAdmin />} />
+          
+          <Route path="website-banner" element={<BannerWebsiteAdmin />} />
+          <Route path="website-profil" element={<ProfilWebsiteAdmin />} />
+          <Route path="website-kontak" element={<KontakAdmin />} />
+          <Route path="website-medsos" element={<MediaSosialAdmin />} />
+          <Route path="website-footer" element={<FooterAdmin />} />
+          
+          <Route path="sistem-user" element={<SystemUserAdmin />} />
+          <Route path="sistem-role" element={<SystemRoleAdmin />} />
+          <Route path="sistem-permission" element={<SystemRoleAdmin />} />
+          <Route path="sistem-activity-log" element={<SystemActivityLogAdmin />} />
+          <Route path="sistem-audit-log" element={<SystemActivityLogAdmin />} />
+          <Route path="sistem-backup" element={<SystemBackupAdmin />} />
+          <Route path="sistem-restore" element={<SystemBackupAdmin />} />
+          
+          <Route path="*" element={<UnderConstruction />} />
         </Route>
       </Routes>
     </Router>

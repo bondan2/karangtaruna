@@ -6,6 +6,7 @@ export default function DokumenAdmin() {
   const [dokumen, setDokumen] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const defaultForm = { nama_dokumen: '', kategori: 'AD/ART', file_url: '' };
   const [formData, setFormData] = useState(defaultForm);
 
@@ -20,10 +21,41 @@ export default function DokumenAdmin() {
     } catch (err) { console.error(err.message); } finally { setLoading(false); }
   };
 
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `dokumen_${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('surat_dokumen')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('surat_dokumen')
+        .getPublicUrl(fileName);
+
+      setFormData({ ...formData, file_url: data.publicUrl });
+    } catch (error) {
+      alert('Gagal mengunggah dokumen: ' + error.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.file_url) {
+      alert('Silakan unggah dokumen PDF/File terlebih dahulu!');
+      return;
+    }
     try {
-      const payload = {...formData, file_url: formData.file_url || 'https://example.com/doc.pdf'};
+      const payload = {...formData};
       if (formData.id) {
         const { id, diunggah_pada, ...updateData } = payload;
         const { error } = await supabase.from('dokumen').update(updateData).eq('id', id);
@@ -127,10 +159,27 @@ export default function DokumenAdmin() {
                   <option value="Dokumen Lainnya">Lainnya</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Unggah Dokumen (PDF/Gambar)</label>
+                {formData.file_url ? (
+                  <div className="flex items-center space-x-4 mb-2 bg-green-50 p-4 rounded-xl border border-green-100">
+                    <div className="flex-1 text-sm font-bold text-green-700 truncate">
+                      Dokumen berhasil diunggah!
+                    </div>
+                    <button type="button" onClick={() => setFormData({...formData, file_url: ''})} className="text-red-600 text-sm font-bold hover:underline">Hapus / Ganti</button>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <input type="file" onChange={handleFileChange} accept=".pdf,image/*" disabled={uploading} className="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 cursor-pointer" />
+                  </div>
+                )}
+              </div>
               
               <div className="pt-4 flex space-x-3">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl">Batal</button>
-                <button type="submit" className="flex-1 px-4 py-3 bg-primary-600 text-white font-bold rounded-xl shadow-lg">Simpan & Unggah</button>
+                <button type="submit" disabled={uploading || !formData.file_url} className="flex-1 px-4 py-3 bg-primary-600 text-white font-bold rounded-xl shadow-lg disabled:opacity-50">
+                  {uploading ? 'Mengunggah...' : 'Simpan Dokumen'}
+                </button>
               </div>
             </form>
           </div>

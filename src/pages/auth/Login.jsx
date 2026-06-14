@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Lock, Mail, ArrowLeft, ArrowRight, ShieldCheck } from 'lucide-react';
 import logo from '../../assets/img/logo.png';
 import heroImage from '../../assets/hero.png';
+import { supabase } from '../../lib/supabase';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -10,16 +11,59 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // Simulasi proses login lokal
-    setTimeout(() => {
-      setLoading(false);
-      localStorage.setItem('userRole', 'Admin');
-      localStorage.setItem('userName', 'Administrator');
+    
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (authError) throw authError;
+
+      // Ambil role asli dari tabel profiles
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role, full_name')
+        .eq('id', authData.user.id)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error("Profile Error:", profileError);
+        alert("Gagal mengambil data profil. RLS mungkin masih aktif atau tabel profil bermasalah: " + profileError.message);
+      }
+
+      let userRole = profile?.role;
+      
+      if (!userRole) {
+        // Jika tabel profile kosong atau diblokir RLS, tebak dari email
+        const emailLower = email.toLowerCase();
+        if (emailLower.startsWith('admin') || emailLower.startsWith('ketua')) {
+          userRole = 'Ketua';
+        } else if (emailLower.startsWith('bendahara')) {
+          userRole = 'Bendahara';
+        } else if (emailLower.startsWith('sekretaris')) {
+          userRole = 'Sekretaris';
+        } else {
+          userRole = 'Anggota';
+        }
+      } else {
+        // Pastikan Huruf Kapital di Awal (Bendahara, bukan bendahara)
+        userRole = userRole.charAt(0).toUpperCase() + userRole.slice(1).toLowerCase();
+      }
+      
+      const userName = profile?.full_name || email;
+
+      localStorage.setItem('userRole', userRole);
+      localStorage.setItem('userName', userName);
       navigate('/dashboard');
-    }, 1500);
+    } catch (error) {
+      alert('Login Gagal: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

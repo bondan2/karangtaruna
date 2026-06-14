@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import { ClipboardList, Plus, Trash2, Edit } from 'lucide-react';
+import { ClipboardList, Plus, Trash2, Edit, QrCode, X, Download } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 export default function AbsensiAdmin() {
   const [absensi, setAbsensi] = useState([]);
-  const [anggotaList, setAnggotaList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const defaultForm = { anggota_id: '', tanggal: new Date().toISOString().split('T')[0], kegiatan: '', status_hadir: 'Hadir' };
+  const [showQR, setShowQR] = useState(false);
+  const [qrData, setQrData] = useState('https://karangtaruna.org/scan-absen');
+  const defaultForm = { nama_peserta: '', tanggal: new Date().toISOString().split('T')[0], kegiatan: '', status_hadir: 'Hadir' };
   const [formData, setFormData] = useState(defaultForm);
 
   useEffect(() => {
@@ -17,26 +18,13 @@ export default function AbsensiAdmin() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      // Fetch absensi along with anggota name
       const { data: absensiData, error: absensiError } = await supabase
         .from('absensi')
-        .select(`
-          *,
-          anggota:anggota_id (nama_lengkap)
-        `)
+        .select('*')
         .order('tanggal', { ascending: false });
       
       if (absensiError) throw absensiError;
       setAbsensi(absensiData || []);
-
-      // Fetch anggota for dropdown
-      const { data: anggotaData, error: anggotaError } = await supabase
-        .from('anggota')
-        .select('id, nama_lengkap')
-        .order('nama_lengkap', { ascending: true });
-        
-      if (anggotaError) throw anggotaError;
-      setAnggotaList(anggotaData || []);
 
     } catch (err) {
       console.error(err.message);
@@ -49,7 +37,7 @@ export default function AbsensiAdmin() {
     e.preventDefault();
     try {
       if (formData.id) {
-        const { id, anggota, ...updateData } = formData;
+        const { id, ...updateData } = formData;
         const { error } = await supabase.from('absensi').update(updateData).eq('id', id);
         if (error) throw error;
       } else {
@@ -90,9 +78,14 @@ export default function AbsensiAdmin() {
           </h1>
           <p className="text-gray-500 mt-1">Rekap kehadiran anggota pada rapat dan kegiatan.</p>
         </div>
-        <button onClick={handleAdd} className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-bold flex items-center shadow-lg transition-all">
-          <Plus className="w-5 h-5 mr-2" /> Catat Kehadiran
-        </button>
+        <div className="flex space-x-3">
+          <button onClick={() => setShowQR(true)} className="bg-white border-2 border-primary-600 text-primary-600 hover:bg-primary-50 px-4 py-3 rounded-xl font-bold flex items-center transition-all">
+            <QrCode className="w-5 h-5 mr-2" /> QR Code
+          </button>
+          <button onClick={handleAdd} className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-bold flex items-center shadow-lg transition-all">
+            <Plus className="w-5 h-5 mr-2" /> Catat Kehadiran
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -121,7 +114,7 @@ export default function AbsensiAdmin() {
                       <div className="font-bold text-gray-900">{item.tanggal}</div>
                       <div className="text-sm text-gray-500">{item.kegiatan}</div>
                     </td>
-                    <td className="px-6 py-4 font-bold text-gray-700">{item.anggota?.nama_lengkap || 'Anggota Dihapus'}</td>
+                    <td className="px-6 py-4 font-bold text-gray-700">{item.nama_peserta || '-'}</td>
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                         item.status_hadir === 'Hadir' ? 'bg-green-100 text-green-700' :
@@ -152,13 +145,8 @@ export default function AbsensiAdmin() {
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Nama Anggota</label>
-                <select required value={formData.anggota_id} onChange={e => setFormData({...formData, anggota_id: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none">
-                  <option value="" disabled>-- Pilih Anggota --</option>
-                  {anggotaList.map(a => (
-                    <option key={a.id} value={a.id}>{a.nama_lengkap}</option>
-                  ))}
-                </select>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Nama Peserta</label>
+                <input required type="text" value={formData.nama_peserta} onChange={e => setFormData({...formData, nama_peserta: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none" placeholder="Masukkan nama peserta..." />
               </div>
               <div className="flex space-x-4">
                 <div className="flex-1">
@@ -185,6 +173,49 @@ export default function AbsensiAdmin() {
                 <button type="submit" className="flex-1 px-4 py-3 bg-primary-600 text-white font-bold rounded-xl shadow-lg">Simpan</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal QR Code */}
+      {showQR && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-in zoom-in-95 text-center p-8 relative">
+            <button onClick={() => setShowQR(false)} className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-900 bg-gray-100 rounded-full">
+              <X className="w-5 h-5" />
+            </button>
+            <QrCode className="w-12 h-12 text-primary-600 mx-auto mb-4" />
+            <h2 className="text-2xl font-black text-gray-900 mb-2">Pindai Kehadiran</h2>
+            <p className="text-gray-500 text-sm mb-4">Arahkan kamera ke QR Code ini untuk mencatat absensi otomatis via Smartphone.</p>
+            
+            <div className="mb-4 text-left">
+              <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">Data / Link QR Code:</label>
+              <input 
+                type="text" 
+                value={qrData}
+                onChange={(e) => setQrData(e.target.value)}
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-primary-500"
+                placeholder="Masukkan link absensi..."
+              />
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-2xl border border-gray-200 flex justify-center mb-6">
+              {/* Menggunakan API publik QR Code */}
+              <img 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}`} 
+                alt="QR Code Absensi" 
+                className="w-48 h-48 rounded-lg"
+              />
+            </div>
+            
+            <a 
+              href={`https://api.qrserver.com/v1/create-qr-code/?size=800x800&data=${encodeURIComponent(qrData)}`}
+              download="QR_Code_Absensi.png"
+              target="_blank" rel="noreferrer"
+              className="w-full flex justify-center items-center px-4 py-3 bg-primary-600 text-white font-bold rounded-xl shadow-lg hover:bg-primary-700 transition-colors"
+            >
+              <Download className="w-5 h-5 mr-2" /> Unduh QR Code (Cetak)
+            </a>
           </div>
         </div>
       )}

@@ -165,3 +165,71 @@ CREATE TABLE pengaturan (
   nilai TEXT NOT NULL,
   deskripsi TEXT
 );
+
+-- 9. Storage Bucket untuk Surat & Dokumen
+-- Menambahkan perintah insert ke storage.buckets
+-- Anda perlu menjalankannya jika belum memiliki bucket 'surat_dokumen'
+/*
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('surat_dokumen', 'surat_dokumen', true);
+
+CREATE POLICY "Bebas Lihat Dokumen" 
+ON storage.objects FOR SELECT USING (bucket_id = 'surat_dokumen');
+
+CREATE POLICY "Bebas Upload Dokumen" 
+ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'surat_dokumen');
+
+CREATE POLICY "Bebas Edit Dokumen" 
+ON storage.objects FOR UPDATE USING (bucket_id = 'surat_dokumen');
+
+CREATE POLICY "Bebas Hapus Dokumen" 
+ON storage.objects FOR DELETE USING (bucket_id = 'surat_dokumen');
+*/
+
+-- 10. Tabel Master Data (Periode, Jabatan, Kepengurusan)
+CREATE TABLE periode (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  tahun_mulai INTEGER NOT NULL,
+  tahun_selesai INTEGER NOT NULL,
+  is_aktif BOOLEAN DEFAULT false,
+  keterangan TEXT
+);
+
+CREATE TABLE jabatan (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  nama_jabatan TEXT NOT NULL UNIQUE,
+  level_akses TEXT DEFAULT 'Anggota',
+  deskripsi TEXT
+);
+
+CREATE TABLE kepengurusan (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  anggota_id UUID REFERENCES anggota(id),
+  jabatan_id UUID REFERENCES jabatan(id),
+  periode_id UUID REFERENCES periode(id),
+  status_aktif BOOLEAN DEFAULT true
+);
+
+-- 11. Tabel Konten Website
+CREATE TABLE banner_website (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  judul TEXT,
+  sub_judul TEXT,
+  image_url TEXT NOT NULL,
+  urutan INTEGER DEFAULT 0,
+  is_aktif BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+-- 12. Tabel Audit & Activity Log
+CREATE TABLE activity_log (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id),
+  user_name TEXT NOT NULL,
+  user_role TEXT,
+  aksi TEXT NOT NULL, -- CREATE, UPDATE, DELETE, LOGIN, EXPORT
+  modul TEXT NOT NULL, -- Anggota, Keuangan, Sistem, dll
+  keterangan TEXT,
+  ip_address TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);

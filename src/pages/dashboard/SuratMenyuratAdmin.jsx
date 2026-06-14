@@ -6,7 +6,8 @@ export default function SuratMenyuratAdmin() {
   const [surat, setSurat] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const defaultForm = { nomor_surat: '', jenis_surat: 'Masuk', tanggal_surat: '', perihal: '', pengirim_penerima: '' };
+  const [uploading, setUploading] = useState(false);
+  const defaultForm = { nomor_surat: '', jenis_surat: 'Masuk', tanggal_surat: '', perihal: '', pengirim_penerima: '', file_url: '' };
   const [formData, setFormData] = useState(defaultForm);
 
   useEffect(() => { fetchSurat(); }, []);
@@ -18,6 +19,33 @@ export default function SuratMenyuratAdmin() {
       if (error) throw error;
       setSurat(data || []);
     } catch (err) { console.error(err.message); } finally { setLoading(false); }
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `surat_${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('surat_dokumen')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('surat_dokumen')
+        .getPublicUrl(fileName);
+
+      setFormData({ ...formData, file_url: data.publicUrl });
+    } catch (error) {
+      alert('Gagal mengunggah file: ' + error.message);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -102,6 +130,11 @@ export default function SuratMenyuratAdmin() {
                       <span className="text-sm font-medium text-gray-600">{item.pengirim_penerima}</span>
                     </td>
                     <td className="px-6 py-4 flex justify-end space-x-2">
+                      {item.file_url && (
+                        <a href={item.file_url} target="_blank" rel="noreferrer" className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">
+                          Lihat File
+                        </a>
+                      )}
                       <button onClick={() => handleEdit(item)} className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg"><Edit className="w-5 h-5" /></button>
                       <button onClick={() => handleDelete(item.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 className="w-5 h-5" /></button>
                     </td>
@@ -147,10 +180,28 @@ export default function SuratMenyuratAdmin() {
                 <label className="block text-sm font-bold text-gray-700 mb-1">Perihal / Hal</label>
                 <input required type="text" value={formData.perihal} onChange={e => setFormData({...formData, perihal: e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none" />
               </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Unggah Arsip Asli (Opsional, PDF/Gambar)</label>
+                {formData.file_url ? (
+                  <div className="flex items-center space-x-4 mb-2 bg-green-50 p-4 rounded-xl border border-green-100">
+                    <div className="flex-1 text-sm font-bold text-green-700 truncate">
+                      File telah diunggah!
+                    </div>
+                    <button type="button" onClick={() => setFormData({...formData, file_url: ''})} className="text-red-600 text-sm font-bold hover:underline">Hapus / Ganti</button>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <input type="file" onChange={handleFileChange} accept=".pdf,image/*" disabled={uploading} className="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 cursor-pointer" />
+                  </div>
+                )}
+              </div>
               
               <div className="pt-4 flex space-x-3">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl">Batal</button>
-                <button type="submit" className="flex-1 px-4 py-3 bg-primary-600 text-white font-bold rounded-xl shadow-lg">Simpan Arsip</button>
+                <button type="submit" disabled={uploading} className="flex-1 px-4 py-3 bg-primary-600 text-white font-bold rounded-xl shadow-lg disabled:opacity-50">
+                  {uploading ? 'Mengunggah Berkas...' : 'Simpan Arsip'}
+                </button>
               </div>
             </form>
           </div>
