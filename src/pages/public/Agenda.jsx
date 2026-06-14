@@ -1,9 +1,20 @@
-import { useState } from 'react';
-import { CalendarDays } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Calendar, Clock, MapPin } from 'lucide-react';
 import heroImage from '../../assets/hero.png';
+import { supabase } from '../../lib/supabase';
 
 export default function Agenda() {
-  const [agenda] = useState([]);
+  const [agenda, setAgenda] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => { fetchAgenda(); }, []);
+
+  const fetchAgenda = async () => {
+    try {
+      const { data, error } = await supabase.from('agenda').select('*').order('tanggal', { ascending: true });
+      if (!error) setAgenda(data || []);
+    } finally { setLoading(false); }
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen pb-20">
@@ -19,16 +30,46 @@ export default function Agenda() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-20">
         <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 min-h-[400px] flex flex-col items-center justify-center">
-          {agenda.length === 0 ? (
-            <div className="text-center">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CalendarDays className="w-12 h-12 text-gray-400" />
+          {loading ? (
+            <div className="py-12 text-center text-gray-500 font-bold">Memuat jadwal kegiatan...</div>
+          ) : agenda.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                <Calendar className="w-10 h-10 text-gray-300" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Belum Ada Agenda</h2>
-              <p className="text-gray-500 max-w-md mx-auto">Tidak ada jadwal kegiatan dalam waktu dekat. Pantau terus halaman ini untuk pembaruan jadwal selanjutnya.</p>
+              <h3 className="text-2xl font-black text-gray-800 mb-2">Belum Ada Agenda Terjadwal</h3>
+              <p className="text-gray-500 max-w-md">Saat ini belum ada jadwal kegiatan warga atau karang taruna dalam waktu dekat.</p>
             </div>
           ) : (
-            <div className="w-full space-y-4">{/* Render agenda items here */}</div>
+            <div className="grid lg:grid-cols-2 gap-8">
+              {agenda.map((item) => {
+                const dateObj = new Date(item.tanggal);
+                return (
+                  <div key={item.id} className="bg-white rounded-[2rem] p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 hover:-translate-y-2 transition-transform duration-300 flex flex-col sm:flex-row gap-6">
+                    <div className="flex-shrink-0 text-center">
+                      <div className="bg-primary-50 rounded-2xl p-4 w-24 h-24 flex flex-col items-center justify-center border border-primary-100">
+                        <span className="text-primary-700 font-black text-2xl leading-none mb-1">{dateObj.getDate()}</span>
+                        <span className="text-primary-600 font-bold text-xs uppercase tracking-widest">{dateObj.toLocaleString('id-ID', { month: 'short' })}</span>
+                      </div>
+                    </div>
+                    <div className="flex-1 flex flex-col">
+                      <h3 className="text-xl font-black text-gray-900 mb-3 leading-tight">{item.nama_acara}</h3>
+                      <p className="text-gray-500 text-sm mb-6 leading-relaxed line-clamp-2">
+                        {item.deskripsi}
+                      </p>
+                      <div className="mt-auto flex flex-wrap gap-4 text-xs font-bold text-gray-400">
+                        <div className="flex items-center">
+                          <Clock className="w-4 h-4 mr-1.5 text-primary-500" /> {item.waktu}
+                        </div>
+                        <div className="flex items-center">
+                          <MapPin className="w-4 h-4 mr-1.5 text-primary-500" /> {item.lokasi}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
       </div>

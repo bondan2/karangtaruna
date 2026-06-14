@@ -1,11 +1,29 @@
-import { useState } from 'react';
-import { Trophy, Flag, Users, Medal, Star } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Trophy, Flag, Calendar, MapPin, Search } from 'lucide-react';
 import heroImage from '../../assets/hero.png';
+import { supabase } from '../../lib/supabase';
 
 export default function LombaPublic() {
+  const [lomba, setLomba] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('berjalan');
-  const [lombaBerjalan] = useState([]);
-  const [lombaSelesai] = useState([]);
+
+  useEffect(() => {
+    fetchLomba();
+  }, []);
+
+  const fetchLomba = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.from('lomba').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      setLomba(data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen pb-20">
@@ -46,7 +64,9 @@ export default function LombaPublic() {
                 <p className="text-gray-500 text-sm mt-2 md:mt-0">Daftar lomba yang dapat diikuti warga saat ini.</p>
               </div>
               
-              {lombaBerjalan.length === 0 ? (
+              {loading ? (
+                <div className="py-12 text-center text-gray-500 font-bold">Memuat data lomba...</div>
+              ) : lomba.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
                   <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6">
                     <Flag className="w-10 h-10 text-gray-300" />
@@ -55,7 +75,27 @@ export default function LombaPublic() {
                   <p className="text-gray-500 max-w-md">Belum ada kegiatan perlombaan yang sedang membuka pendaftaran. Tunggu informasi seru selanjutnya!</p>
                 </div>
               ) : (
-                <div className="grid md:grid-cols-2 gap-6">{/* Lomba Berjalan Cards */}</div>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {lomba.map((item) => (
+                    <div key={item.id} className="bg-white rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 hover:-translate-y-2 transition-transform duration-300">
+                      <div className="flex justify-between items-start mb-4">
+                        <span className="bg-primary-100 text-primary-700 text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-full">
+                          {item.kategori}
+                        </span>
+                        <span className="text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-full">
+                          {item.status}
+                        </span>
+                      </div>
+                      <h3 className="text-xl font-black text-gray-900 mb-2 leading-tight">{item.nama_lomba}</h3>
+                      <div className="flex items-center text-gray-500 text-sm font-medium mb-6">
+                        <Calendar className="w-4 h-4 mr-2" /> {item.tanggal_pelaksanaan}
+                      </div>
+                      <button className="w-full bg-gray-50 hover:bg-primary-600 hover:text-white text-gray-900 font-black uppercase tracking-widest py-3 rounded-xl transition-colors">
+                        Daftar Sekarang
+                      </button>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           )}
@@ -67,17 +107,13 @@ export default function LombaPublic() {
                 <p className="text-gray-500 text-sm mt-2 md:mt-0">Daftar para juara lomba sebelumnya.</p>
               </div>
               
-              {lombaSelesai.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="flex flex-col items-center justify-center py-20 text-center">
                   <div className="w-24 h-24 bg-yellow-50 rounded-full flex items-center justify-center mb-6">
                     <Trophy className="w-10 h-10 text-yellow-400" />
                   </div>
                   <h3 className="text-2xl font-bold text-gray-800 mb-3">Belum Ada Pengumuman</h3>
                   <p className="text-gray-500 max-w-md">Belum ada daftar juara lomba yang diterbitkan saat ini.</p>
-                </div>
-              ) : (
-                <div className="space-y-8">{/* Pemenang Cards */}</div>
-              )}
+              </div>
             </div>
           )}
         </div>
