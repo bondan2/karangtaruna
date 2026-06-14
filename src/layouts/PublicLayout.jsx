@@ -10,11 +10,13 @@ export default function PublicLayout() {
 
   const navigation = [
     { name: 'BERANDA', href: '/' },
-    { name: 'PROFIL', href: '/tentang' },
-    { name: 'PROGRAM KERJA', href: '/program' },
+    { name: 'TENTANG KAMI', href: '/tentang' },
+    { name: 'PROGRAM', href: '/program' },
+    { name: 'LOMBA', href: '/lomba' },
     { name: 'BERITA', href: '/berita' },
     { name: 'AGENDA', href: '/agenda' },
     { name: 'GALERI', href: '/galeri' },
+    { name: 'KEUANGAN', href: '/keuangan' },
     { name: 'KONTAK', href: '/kontak' },
   ];
 
@@ -59,12 +61,12 @@ export default function PublicLayout() {
             </div>
             
             {/* Desktop Menu */}
-            <div className="hidden lg:flex lg:items-center lg:space-x-8">
+            <div className="hidden xl:flex xl:items-center xl:space-x-4">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`py-6 text-[13px] font-black tracking-wide uppercase transition-colors relative ${
+                  className={`py-6 text-[12px] font-black tracking-wide uppercase transition-colors relative ${
                     isActive(item.href)
                       ? 'text-primary-600'
                       : 'text-gray-900 hover:text-primary-600'
@@ -87,7 +89,7 @@ export default function PublicLayout() {
             </div>
 
             {/* Mobile menu button */}
-            <div className="flex items-center lg:hidden ml-4 flex-shrink-0">
+            <div className="flex items-center xl:hidden ml-4 flex-shrink-0">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="inline-flex items-center justify-center p-2 rounded-md focus:outline-none text-gray-900 hover:bg-gray-100"
@@ -100,7 +102,7 @@ export default function PublicLayout() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden absolute top-full left-0 w-full bg-white shadow-xl border-t border-gray-100 animate-in slide-in-from-top-2">
+          <div className="xl:hidden absolute top-full left-0 w-full bg-white shadow-xl border-t border-gray-100 animate-in slide-in-from-top-2">
             <div className="px-4 pt-4 pb-6 space-y-2 max-h-[70vh] overflow-y-auto">
               <div className="text-xs font-bold text-gray-400 mb-2 pb-2 border-b">MENU UTAMA</div>
               {navigation.map((item) => (

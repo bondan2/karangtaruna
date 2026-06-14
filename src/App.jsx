@@ -13,6 +13,8 @@ import Pengumuman from './pages/public/Pengumuman';
 import Agenda from './pages/public/Agenda';
 import Galeri from './pages/public/Galeri';
 import Kontak from './pages/public/Kontak';
+import KeuanganPublic from './pages/public/KeuanganPublic';
+import LombaPublic from './pages/public/LombaPublic';
 
 // Auth
 import Login from './pages/auth/Login';
@@ -47,6 +49,8 @@ function App() {
           <Route path="pengumuman" element={<Pengumuman />} />
           <Route path="agenda" element={<Agenda />} />
           <Route path="galeri" element={<Galeri />} />
+          <Route path="keuangan" element={<KeuanganPublic />} />
+          <Route path="lomba" element={<LombaPublic />} />
           <Route path="kontak" element={<Kontak />} />
         </Route>
 
