@@ -48,14 +48,13 @@ export default function PublicLayout() {
       <nav className="z-50 sticky top-0 w-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.05)] border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-2 min-h-[90px]">
-            {/* Logo Area */}
             <div className="flex items-center min-w-0 flex-shrink-0">
-              <Link to="/" className="flex items-center space-x-3 md:space-x-4 overflow-hidden group">
-                <img src={logo} alt="Logo Karang Taruna" className="transition-transform duration-300 group-hover:scale-105 object-contain flex-shrink-0 h-14 w-14 md:h-[72px] md:w-[72px]" />
+              <Link to="/" className="flex items-center space-x-2 md:space-x-4 overflow-hidden group">
+                <img src={logo} alt="Logo Karang Taruna" className="transition-transform duration-300 group-hover:scale-105 object-contain flex-shrink-0 h-10 w-10 sm:h-14 sm:w-14 md:h-[72px] md:w-[72px]" />
                 <div className="truncate flex flex-col justify-center">
-                  <span className="block font-black leading-tight uppercase text-gray-900 text-lg md:text-[22px] tracking-tight">Karang Taruna</span>
-                  <span className="block font-black leading-tight uppercase text-gray-900 text-lg md:text-[22px] tracking-tight">Bina Pemuda</span>
-                  <span className="block text-[8px] md:text-[10px] font-bold tracking-widest uppercase text-gray-500 mt-0.5">Pondok Betung - Pondok Aren</span>
+                  <span className="block font-black leading-tight uppercase text-gray-900 text-sm sm:text-lg md:text-[22px] tracking-tight">Karang Taruna</span>
+                  <span className="block font-black leading-tight uppercase text-gray-900 text-sm sm:text-lg md:text-[22px] tracking-tight">Bina Pemuda</span>
+                  <span className="block text-[6px] sm:text-[8px] md:text-[10px] font-bold tracking-widest uppercase text-gray-500 mt-0.5">Pondok Betung - Pondok Aren</span>
                 </div>
               </Link>
             </div>

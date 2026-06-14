@@ -13,9 +13,11 @@ export default function Login() {
   const handleLogin = (e) => {
     e.preventDefault();
     setLoading(true);
-    // Simulasi proses login
+    // Simulasi proses login lokal
     setTimeout(() => {
       setLoading(false);
+      localStorage.setItem('userRole', 'Admin');
+      localStorage.setItem('userName', 'Administrator');
       navigate('/dashboard');
     }, 1500);
   };

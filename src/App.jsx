@@ -32,6 +32,7 @@ import NotulenRapatAdmin from './pages/dashboard/NotulenRapatAdmin';
 import KeuanganAdmin from './pages/dashboard/KeuanganAdmin';
 import InventarisAdmin from './pages/dashboard/InventarisAdmin';
 import DokumenAdmin from './pages/dashboard/DokumenAdmin';
+import LombaAdmin from './pages/dashboard/LombaAdmin';
 import Event17AgustusAdmin from './pages/dashboard/Event17AgustusAdmin';
 import GaleriAdmin from './pages/dashboard/GaleriAdmin';
 import PengaturanAdmin from './pages/dashboard/PengaturanAdmin';
@@ -71,6 +72,7 @@ function App() {
           <Route path="keuangan" element={<KeuanganAdmin />} />
           <Route path="inventaris" element={<InventarisAdmin />} />
           <Route path="dokumen" element={<DokumenAdmin />} />
+          <Route path="lomba" element={<LombaAdmin />} />
           <Route path="event-17-agustus" element={<Event17AgustusAdmin />} />
           <Route path="galeri" element={<GaleriAdmin />} />
           <Route path="pengaturan" element={<PengaturanAdmin />} />
