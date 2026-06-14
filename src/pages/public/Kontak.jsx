@@ -30,7 +30,7 @@ export default function Kontak() {
                   </div>
                   <div>
                     <h4 className="font-bold text-gray-900">Alamat Lengkap</h4>
-                    <p className="text-gray-600 text-sm mt-1">Jl. Raya Pondok Betung, Kel. Pondok Betung, Kec. Pondok Aren, Kota Tangerang Selatan, Banten</p>
+                    <p className="text-gray-600 text-sm mt-1">Jl. Raya Pondok Betung, Rt.001/05, Kel. Pondok Betung, Kec. Pondok Aren, Kota Tangerang Selatan, Banten</p>
                   </div>
                 </li>
                 

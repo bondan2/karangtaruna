@@ -32,7 +32,7 @@ export default function PublicLayout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <MapPin className="w-3.5 h-3.5" />
-            <span>Jl. Karang Taruna No.1, Desa</span>
+            <span>Jl. Raya Pondok Betung, Rt.001/05, Kel. Pondok Betung, Kec. Pondok Aren, Kota Tangerang Selatan, Banten</span>
           </div>
           <div className="flex items-center space-x-4">
             <a href="#" className="hover:text-primary-200 transition-colors"><FaInstagram className="w-4 h-4" /></a>
@@ -151,7 +151,7 @@ export default function PublicLayout() {
             </div>
             <div>
               <h5 className="text-white text-lg font-bold mb-6 uppercase tracking-wider">Alamat & Kontak</h5>
-              <p className="mb-4">Jl. Karang Taruna No.1, Desa</p>
+              <p className="mb-4">Jl. Raya Pondok Betung, Rt.001/05, Kel. Pondok Betung, Kec. Pondok Aren, Kota Tangerang Selatan, Banten</p>
               <div className="flex space-x-3 mt-6">
                 <a href="#" className="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center hover:bg-primary-600 hover:border-primary-600 hover:text-white transition-all">
                   <FaInstagram className="w-5 h-5" />
