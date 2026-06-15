@@ -78,7 +78,7 @@ export default function GaleriAdmin() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <div className="flex items-center">
           <div className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center mr-4 text-pink-600">
             <ImageIcon className="w-6 h-6" />

@@ -53,7 +53,7 @@ export default function PengaturanAdmin() {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <div>
           <h1 className="text-2xl font-black text-gray-900 flex items-center">
             <Settings className="w-8 h-8 mr-3 text-gray-700" /> Pengaturan Sistem

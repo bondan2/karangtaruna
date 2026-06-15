@@ -86,7 +86,7 @@ export default function LombaAdmin() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <div>
           <h1 className="text-2xl font-black text-gray-900 flex items-center">
             <Trophy className="w-8 h-8 mr-3 text-yellow-500" /> Manajemen Lomba
