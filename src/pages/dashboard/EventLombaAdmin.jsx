@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Flag, Trophy, Users, Plus, Edit, Trash2, XCircle, Search } from 'lucide-react';
+import { Flag, Trophy, Users, Plus, Edit, Trash2, XCircle, Search, FileText, Download } from 'lucide-react';
+import { exportToExcel, exportToPDF } from '../../utils/exportUtils';
 
 export default function EventLombaAdmin({ tipe }) {
   const [data, setData] = useState([]);
@@ -117,6 +118,61 @@ export default function EventLombaAdmin({ tipe }) {
     return <Users className="w-6 h-6" />;
   };
 
+  const handleExportExcel = () => {
+    let dataToExport = [];
+    if (tipe === 'Event') {
+      dataToExport = data.map((item, index) => ({
+        'No': index + 1,
+        'Nama Kegiatan': item.nama_kegiatan,
+        'Penanggung Jawab': item.penanggung_jawab || '-',
+        'Anggaran': item.anggaran || 0,
+        'Status': item.status
+      }));
+    } else if (tipe === 'Lomba') {
+      dataToExport = data.map((item, index) => ({
+        'No': index + 1,
+        'Nama Lomba': item.nama_lomba,
+        'Kategori': item.kategori,
+        'Tanggal': item.tanggal_pelaksanaan,
+        'Status': item.status
+      }));
+    } else {
+      dataToExport = data.map((item, index) => ({
+        'No': index + 1,
+        'Nama Peserta': item.nama_peserta,
+        'Kontak': item.kontak || '-',
+        'Asal RT/RW': item.asal_rt_rw || '-',
+        'Lomba': item.lomba?.nama_lomba || '-',
+        'Status Juara': item.status_juara || '-'
+      }));
+    }
+    exportToExcel(dataToExport, `Data_${tipe}_Karang_Taruna`);
+  };
+
+  const handleExportPDF = () => {
+    let headers = [];
+    let dataToExport = [];
+    
+    if (tipe === 'Event') {
+      headers = ['No', 'Nama Kegiatan', 'Penanggung Jawab', 'Anggaran', 'Status'];
+      dataToExport = data.map((item, index) => [
+        index + 1, item.nama_kegiatan, item.penanggung_jawab || '-', item.anggaran ? `Rp${item.anggaran}` : '-', item.status
+      ]);
+    } else if (tipe === 'Lomba') {
+      headers = ['No', 'Nama Lomba', 'Kategori', 'Tanggal', 'Status'];
+      dataToExport = data.map((item, index) => [
+        index + 1, item.nama_lomba, item.kategori, item.tanggal_pelaksanaan || '-', item.status
+      ]);
+    } else {
+      headers = ['No', 'Nama Peserta', 'Kontak', 'Asal RT/RW', 'Lomba', 'Juara'];
+      dataToExport = data.map((item, index) => [
+        index + 1, item.nama_peserta, item.kontak || '-', item.asal_rt_rw || '-', item.lomba?.nama_lomba || '-', item.status_juara || '-'
+      ]);
+    }
+
+    exportToPDF(headers, dataToExport, `Laporan Kepanitiaan - ${tipe}`, `Data_${tipe}`, 'landscape');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
@@ -129,12 +185,28 @@ export default function EventLombaAdmin({ tipe }) {
             <p className="text-sm text-gray-500 font-medium">Manajemen data khusus {tipe.toLowerCase()} Karang Taruna</p>
           </div>
         </div>
-        <button 
-          onClick={openNewModal}
-          className="flex items-center px-4 py-2 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-sm"
-        >
-          <Plus className="w-5 h-5 mr-2" /> Tambah {tipe}
-        </button>
+        <div className="flex gap-2">
+          <button 
+            onClick={handleExportPDF}
+            className="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-xl font-bold flex items-center transition-all border border-red-200"
+            title="Unduh PDF"
+          >
+            <FileText className="w-5 h-5 mr-2" /> PDF
+          </button>
+          <button 
+            onClick={handleExportExcel}
+            className="bg-green-50 hover:bg-green-100 text-green-600 px-4 py-2 rounded-xl font-bold flex items-center transition-all border border-green-200"
+            title="Unduh Excel"
+          >
+            <Download className="w-5 h-5 mr-2" /> Excel
+          </button>
+          <button 
+            onClick={openNewModal}
+            className="flex items-center px-4 py-2 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-sm"
+          >
+            <Plus className="w-5 h-5 mr-2" /> Tambah {tipe}
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">

@@ -92,27 +92,17 @@ function App() {
         {/* Dashboard Routes */}
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardIndex />} />
-          <Route path="berita" element={<BeritaAdmin />} />
-          <Route path="pengumuman" element={<PengumumanAdmin />} />
-          <Route path="agenda" element={<AgendaAdmin />} />
+          <Route path="monitoring" element={<SystemActivityLogAdmin />} />
+          
           <Route path="anggota" element={<AnggotaAdmin />} />
           <Route path="periode" element={<PeriodeAdmin />} />
           <Route path="jabatan" element={<JabatanAdmin />} />
           <Route path="kepengurusan" element={<KepengurusanAdmin />} />
           <Route path="absensi" element={<AbsensiAdmin />} />
-          <Route path="program-kerja" element={<ProgramKerjaAdmin />} />
-          <Route path="surat-menyurat" element={<SuratMenyuratAdmin />} />
-          <Route path="notulen-rapat" element={<NotulenRapatAdmin />} />
-          <Route path="keuangan" element={<KeuanganAdmin />} />
           <Route path="inventaris" element={<InventarisAdmin />} />
-          <Route path="dokumen" element={<DokumenAdmin />} />
-          <Route path="lomba" element={<LombaAdmin />} />
-          <Route path="event" element={<Event17AgustusAdmin />} />
-          <Route path="event-17-agustus" element={<Event17AgustusAdmin />} />
-          <Route path="galeri" element={<GaleriAdmin />} />
           <Route path="pengaturan" element={<PengaturanAdmin />} />
           
-          <Route path="website-banner" element={<BannerWebsiteAdmin />} />
+          {/* Website Management */}
           <Route path="website-profil" element={<ProfilWebsiteAdmin />} />
           <Route path="website-kontak" element={<KontakAdmin />} />
           <Route path="website-medsos" element={<MediaSosialAdmin />} />
@@ -140,11 +130,13 @@ function App() {
           <Route path="anggaran-proker" element={<KeuanganAnggaran tipe="Proker" />} />
           <Route path="anggaran-event" element={<KeuanganAnggaran tipe="Event" />} />
           <Route path="anggaran-proposal" element={<KeuanganAnggaran tipe="Proposal" />} />
+          <Route path="persetujuan" element={<KeuanganTransaksi jenisTransaksi="Pengeluaran" kategori="Persetujuan" />} />
           
           <Route path="laporan-harian" element={<KeuanganLaporan rentang="Harian" />} />
           <Route path="laporan-bulanan" element={<KeuanganLaporan rentang="Bulanan" />} />
           <Route path="laporan-tahunan" element={<KeuanganLaporan rentang="Tahunan" />} />
           <Route path="rekap-kas" element={<KeuanganLaporan rentang="Rekap Kas" />} />
+          <Route path="laporan-keuangan" element={<KeuanganLaporan rentang="Rekap Kas" />} />
           <Route path="keuangan" element={<KeuanganLaporan rentang="Rekap Kas" />} />
           
           <Route path="sponsor" element={<SponsorAdmin />} />
@@ -176,6 +168,8 @@ function App() {
           <Route path="event" element={<EventLombaAdmin tipe="Event" />} />
           <Route path="lomba" element={<EventLombaAdmin tipe="Lomba" />} />
           <Route path="peserta" element={<EventLombaAdmin tipe="Peserta" />} />
+          <Route path="penilaian" element={<EventLombaAdmin tipe="Peserta" />} />
+          <Route path="hasil-lomba" element={<EventLombaAdmin tipe="Peserta" />} />
           
           <Route path="*" element={<UnderConstruction />} />
         </Route>

@@ -8,6 +8,7 @@ import { supabase } from '../../lib/supabase';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -16,51 +17,64 @@ export default function Login() {
     setLoading(true);
     
     try {
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (authError) throw authError;
-
-      // Ambil role asli dari tabel profiles
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role, full_name')
-        .eq('id', authData.user.id)
-        .maybeSingle();
-
-      if (profileError) {
-        console.error("Profile Error:", profileError);
-        alert("Gagal mengambil data profil. RLS mungkin masih aktif atau tabel profil bermasalah: " + profileError.message);
-      }
-
-      let userRole = profile?.role;
-      
-      if (!userRole) {
-        // Jika tabel profile kosong atau diblokir RLS, tebak dari email
-        const emailLower = email.toLowerCase();
-        if (emailLower.startsWith('admin') || emailLower.startsWith('ketua')) {
-          userRole = 'Ketua';
-        } else if (emailLower.startsWith('bendahara')) {
-          userRole = 'Bendahara';
-        } else if (emailLower.startsWith('sekretaris')) {
-          userRole = 'Sekretaris';
-        } else {
-          userRole = 'Anggota';
-        }
+      if (isRegistering) {
+        // Mode Daftar (Register)
+        const { data: regData, error: regError } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        
+        if (regError) throw regError;
+        alert('Registrasi Berhasil! Silakan login sekarang. (Jika email confirmation aktif, cek inbox Anda).');
+        setIsRegistering(false); // Switch back to login
       } else {
-        // Pastikan Huruf Kapital di Awal (Bendahara, bukan bendahara)
-        userRole = userRole.charAt(0).toUpperCase() + userRole.slice(1).toLowerCase();
-      }
-      
-      const userName = profile?.full_name || email;
+        // Mode Masuk (Login)
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-      localStorage.setItem('userRole', userRole);
-      localStorage.setItem('userName', userName);
-      navigate('/dashboard');
+        if (authError) throw authError;
+
+        // Ambil role asli dari tabel profiles
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role, full_name')
+          .eq('id', authData.user.id)
+          .maybeSingle();
+
+        if (profileError) {
+          console.error("Profile Error:", profileError);
+          alert("Gagal mengambil data profil. RLS mungkin masih aktif atau tabel profil bermasalah: " + profileError.message);
+        }
+
+        let userRole = profile?.role;
+        
+        if (!userRole) {
+          // Jika tabel profile kosong atau diblokir RLS, tebak dari email
+          const emailLower = email.toLowerCase();
+          if (emailLower.startsWith('admin') || emailLower.startsWith('ketua')) {
+            userRole = 'Ketua';
+          } else if (emailLower.startsWith('bendahara')) {
+            userRole = 'Bendahara';
+          } else if (emailLower.startsWith('sekretaris')) {
+            userRole = 'Sekretaris';
+          } else {
+            userRole = 'Anggota';
+          }
+        } else {
+          // Pastikan Huruf Kapital di Awal (Bendahara, bukan bendahara)
+          userRole = userRole.charAt(0).toUpperCase() + userRole.slice(1).toLowerCase();
+        }
+        
+        const userName = profile?.full_name || email;
+
+        localStorage.setItem('userRole', userRole);
+        localStorage.setItem('userName', userName);
+        navigate('/dashboard');
+      }
     } catch (error) {
-      alert('Login Gagal: ' + error.message);
+      alert((isRegistering ? 'Registrasi Gagal: ' : 'Login Gagal: ') + error.message);
     } finally {
       setLoading(false);
     }
@@ -123,10 +137,15 @@ export default function Login() {
                 <img src={logo} alt="Logo" className="w-20 h-20 object-contain" />
               </div>
             </div>
-
-            <div className="text-center md:text-left mb-10 pt-4 md:pt-0">
-              <h2 className="text-3xl sm:text-4xl font-black text-gray-900 uppercase tracking-tight mb-3">Selamat Datang</h2>
-              <p className="text-gray-500 font-medium">Silakan masuk menggunakan kredensial pengurus Anda untuk mengelola sistem.</p>
+            
+            {/* Header Login/Register */}
+            <div className="mb-10 text-center">
+              <h2 className="text-3xl font-black text-gray-900 mb-2">{isRegistering ? 'Daftar Akun Baru' : 'Selamat Datang Kembali'}</h2>
+              <p className="text-gray-500 font-medium">
+                {isRegistering 
+                  ? 'Silakan masukkan email dan password untuk mendaftar.' 
+                  : 'Silakan masukkan kredensial Anda untuk mengakses sistem.'}
+              </p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-6">
@@ -168,25 +187,29 @@ export default function Login() {
               </div>
 
               <div className="pt-4">
-                <button
-                  type="submit"
+                <button 
+                  type="submit" 
                   disabled={loading}
-                  className="group w-full flex items-center justify-center py-4 px-4 border border-transparent rounded-2xl text-sm font-black tracking-widest uppercase text-white bg-primary-700 hover:bg-primary-800 hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-primary-500/20 shadow-xl shadow-primary-700/20 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full bg-primary-700 hover:bg-primary-800 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary-700/30 transition-all flex items-center justify-center group disabled:opacity-70 disabled:cursor-not-allowed mt-4"
                 >
-                  {loading ? (
-                    <span className="flex items-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                      MEMPROSES...
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-between w-full px-2">
-                      <span>MASUK KE DASHBOARD</span>
-                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </span>
-                  )}
+                  {loading ? 'Memproses...' : (isRegistering ? 'DAFTAR SEKARANG' : 'MASUK KE DASHBOARD')}
+                  {!loading && <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />}
                 </button>
               </div>
             </form>
+
+            {/* Toggle Register */}
+            <div className="mt-8 text-center">
+              <p className="text-gray-500 text-sm">
+                {isRegistering ? 'Sudah punya akun?' : 'Belum memiliki akun?'} 
+                <button 
+                  onClick={() => setIsRegistering(!isRegistering)} 
+                  className="ml-2 font-bold text-primary-600 hover:text-primary-800 transition-colors"
+                >
+                  {isRegistering ? 'Masuk di sini' : 'Daftar Akun'}
+                </button>
+              </p>
+            </div>
             
             <div className="mt-10 text-center text-xs font-bold text-gray-400">
               <p>&copy; 2026 Karang Taruna Bina Pemuda.<br/>Sistem Informasi Manajemen Terpadu.</p>

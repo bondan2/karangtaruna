@@ -17,7 +17,12 @@ export default function DashboardLayout() {
   useEffect(() => {
     const savedRole = localStorage.getItem('userRole');
     if (savedRole) {
-      setRole(savedRole);
+      // Fix common typos from database inputs
+      if (savedRole === 'Sektretaris' || savedRole === 'Sekertaris') {
+        setRole('Sekretaris');
+      } else {
+        setRole(savedRole);
+      }
     }
   }, [navigate]);
 
@@ -83,74 +88,19 @@ export default function DashboardLayout() {
       ]
     },
 
-    // --- KETUA ---
-    {
-      group: 'Menu',
-      roles: ['Ketua'],
-      items: [
-        { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-      ]
-    },
-    {
-      group: 'Organisasi',
-      roles: ['Ketua'],
-      items: [
-        { name: 'Anggota', path: '/dashboard/anggota', icon: Users },
-        { name: 'Kepengurusan', path: '/dashboard/kepengurusan', icon: Users },
-        { name: 'Program Kerja', path: '/dashboard/program-kerja', icon: Briefcase },
-        { name: 'Inventaris', path: '/dashboard/inventaris', icon: Box },
-      ]
-    },
-    {
-      group: 'Informasi',
-      roles: ['Ketua', 'Anggota'],
-      items: [
-        { name: 'Berita', path: '/dashboard/berita', icon: Newspaper },
-        { name: 'Pengumuman', path: '/dashboard/pengumuman', icon: Bell },
-        { name: 'Agenda', path: '/dashboard/agenda', icon: Calendar },
-      ]
-    },
-    {
-      group: 'Kegiatan',
-      roles: ['Ketua', 'Anggota'],
-      items: [
-        { name: 'Event', path: '/dashboard/event', icon: Flag },
-        { name: 'Lomba', path: '/dashboard/lomba', icon: Trophy },
-        { name: 'Peserta', path: '/dashboard/peserta', icon: Users },
-        { name: 'Penilaian', path: '/dashboard/penilaian', icon: CheckSquare, roles: ['Ketua'] },
-        { name: 'Hasil Lomba', path: '/dashboard/hasil-lomba', icon: Trophy },
-      ]
-    },
-    {
-      group: 'Administrasi',
-      roles: ['Ketua'],
-      items: [
-        { name: 'Dokumen', path: '/dashboard/dokumen', icon: Archive },
-        { name: 'Notulen Rapat', path: '/dashboard/notulen-rapat', icon: CheckSquare },
-        { name: 'Surat Menyurat', path: '/dashboard/surat-menyurat', icon: FileText },
-      ]
-    },
-    {
-      group: 'Keuangan',
-      roles: ['Ketua'],
-      items: [
-        { name: 'Ringkasan Kas', path: '/dashboard/keuangan', icon: Wallet },
-        { name: 'Persetujuan Keluar', path: '/dashboard/persetujuan', icon: CheckSquare },
-        { name: 'Laporan Keuangan', path: '/dashboard/laporan-keuangan', icon: BarChart3 },
-      ]
-    },
+
 
     // --- SEKRETARIS ---
     {
       group: 'Menu Utama',
-      roles: ['Sekretaris', 'Bendahara'],
+      roles: ['Sekretaris', 'Bendahara', 'Admin', 'Ketua'],
       items: [
         { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
       ]
     },
     {
       group: 'Konten',
-      roles: ['Sekretaris'],
+      roles: ['Sekretaris', 'Admin', 'Ketua'],
       items: [
         { name: 'Berita', path: '/dashboard/berita', icon: Newspaper },
         { name: 'Pengumuman', path: '/dashboard/pengumuman', icon: Bell },
@@ -159,8 +109,8 @@ export default function DashboardLayout() {
       ]
     },
     {
-      group: 'Administrasi',
-      roles: ['Sekretaris'],
+      group: 'Administrasi Sekretariat',
+      roles: ['Sekretaris', 'Admin', 'Ketua'],
       items: [
         { name: 'Surat Masuk', path: '/dashboard/surat-masuk', icon: FileText },
         { name: 'Surat Keluar', path: '/dashboard/surat-keluar', icon: FileText },
@@ -170,8 +120,8 @@ export default function DashboardLayout() {
       ]
     },
     {
-      group: 'Dokumen',
-      roles: ['Sekretaris'],
+      group: 'Dokumen Sekretariat',
+      roles: ['Sekretaris', 'Admin', 'Ketua'],
       items: [
         { name: 'Proposal', path: '/dashboard/proposal', icon: FileText },
         { name: 'LPJ', path: '/dashboard/lpj', icon: FileText },
@@ -181,20 +131,24 @@ export default function DashboardLayout() {
       ]
     },
     {
-      group: 'Organisasi',
-      roles: ['Sekretaris'],
+      group: 'Organisasi Kepengurusan',
+      roles: ['Sekretaris', 'Admin', 'Ketua'],
       items: [
         { name: 'Anggota', path: '/dashboard/anggota', icon: Users },
+        { name: 'Kepengurusan', path: '/dashboard/kepengurusan', icon: Users, roles: ['Admin', 'Ketua'] },
         { name: 'Program Kerja', path: '/dashboard/program-kerja', icon: Briefcase },
+        { name: 'Inventaris', path: '/dashboard/inventaris', icon: Box, roles: ['Admin', 'Ketua'] },
       ]
     },
     {
-      group: 'Event',
-      roles: ['Sekretaris'],
+      group: 'Event Lomba',
+      roles: ['Sekretaris', 'Admin', 'Ketua', 'Anggota'],
       items: [
         { name: 'Event', path: '/dashboard/event', icon: Flag },
         { name: 'Lomba', path: '/dashboard/lomba', icon: Trophy },
         { name: 'Peserta', path: '/dashboard/peserta', icon: Users },
+        { name: 'Penilaian', path: '/dashboard/penilaian', icon: CheckSquare, roles: ['Ketua', 'Admin'] },
+        { name: 'Hasil Lomba', path: '/dashboard/hasil-lomba', icon: Trophy },
         { name: 'Dokumentasi', path: '/dashboard/dokumentasi', icon: ImageIcon },
       ]
     },
@@ -202,7 +156,7 @@ export default function DashboardLayout() {
     // --- BENDAHARA ---
     {
       group: 'Pemasukan',
-      roles: ['Bendahara'],
+      roles: ['Bendahara', 'Admin', 'Ketua'],
       items: [
         { name: 'Iuran Anggota', path: '/dashboard/iuran', icon: Wallet },
         { name: 'Donasi', path: '/dashboard/donasi', icon: Wallet },
@@ -212,7 +166,7 @@ export default function DashboardLayout() {
     },
     {
       group: 'Pengeluaran',
-      roles: ['Bendahara'],
+      roles: ['Bendahara', 'Admin', 'Ketua'],
       items: [
         { name: 'Operasional', path: '/dashboard/operasional', icon: Wallet },
         { name: 'Kegiatan', path: '/dashboard/pengeluaran-kegiatan', icon: Wallet },
@@ -222,7 +176,7 @@ export default function DashboardLayout() {
     },
     {
       group: 'Anggaran',
-      roles: ['Bendahara'],
+      roles: ['Bendahara', 'Admin', 'Ketua'],
       items: [
         { name: 'Program Kerja', path: '/dashboard/anggaran-proker', icon: Briefcase },
         { name: 'Event', path: '/dashboard/anggaran-event', icon: Flag },
@@ -230,9 +184,10 @@ export default function DashboardLayout() {
       ]
     },
     {
-      group: 'Laporan',
-      roles: ['Bendahara'],
+      group: 'Laporan & Keuangan',
+      roles: ['Bendahara', 'Admin', 'Ketua'],
       items: [
+        { name: 'Persetujuan Dana', path: '/dashboard/persetujuan', icon: CheckSquare, roles: ['Ketua', 'Admin'] },
         { name: 'Harian', path: '/dashboard/laporan-harian', icon: BarChart3 },
         { name: 'Bulanan', path: '/dashboard/laporan-bulanan', icon: BarChart3 },
         { name: 'Tahunan', path: '/dashboard/laporan-tahunan', icon: BarChart3 },
@@ -241,7 +196,7 @@ export default function DashboardLayout() {
     },
     {
       group: 'Sponsor',
-      roles: ['Bendahara'],
+      roles: ['Bendahara', 'Admin', 'Ketua'],
       items: [
         { name: 'Kelola Sponsor', path: '/dashboard/sponsor', icon: Users },
       ]
@@ -250,13 +205,12 @@ export default function DashboardLayout() {
     // --- ANGGOTA ---
     {
       group: 'Menu Anggota',
-      roles: ['Anggota'],
+      roles: ['Anggota', 'Admin'],
       items: [
         { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
         { name: 'Absensi', path: '/dashboard/absensi', icon: ClipboardList },
         { name: 'Galeri', path: '/dashboard/galeri', icon: ImageIcon },
         { name: 'Dokumen Publik', path: '/dashboard/dokumen-publik', icon: Archive },
-        { name: 'Profil Saya', path: '/dashboard/profil', icon: Users },
       ]
     }
   ];

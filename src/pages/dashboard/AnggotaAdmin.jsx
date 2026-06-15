@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Users, Plus, Edit, Trash2, ShieldCheck, CheckCircle2, XCircle } from 'lucide-react';
+import { Users, Plus, Edit, Trash2, ShieldCheck, CheckCircle2, XCircle, FileText, Download } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { exportToExcel, exportToPDF } from '../../utils/exportUtils';
 
 export default function AnggotaAdmin() {
   const [anggota, setAnggota] = useState([]);
@@ -61,6 +62,30 @@ export default function AnggotaAdmin() {
     }
   };
 
+  const handleExportExcel = () => {
+    const dataToExport = anggota.map((item, index) => ({
+      'No': index + 1,
+      'Nama Lengkap': item.nama_lengkap,
+      'NIK': item.nik || '-',
+      'Alamat': item.alamat,
+      'Status': item.status_aktif ? 'Aktif' : 'Non-aktif',
+      'Tanggal Bergabung': new Date(item.tanggal_bergabung).toLocaleDateString('id-ID')
+    }));
+    exportToExcel(dataToExport, 'Data_Anggota_Karang_Taruna');
+  };
+
+  const handleExportPDF = () => {
+    const headers = ['No', 'Nama Lengkap', 'NIK', 'Alamat', 'Status'];
+    const dataToExport = anggota.map((item, index) => [
+      index + 1,
+      item.nama_lengkap,
+      item.nik || '-',
+      item.alamat,
+      item.status_aktif ? 'Aktif' : 'Non-aktif'
+    ]);
+    exportToPDF(headers, dataToExport, 'Laporan Data Anggota Karang Taruna', 'Data_Anggota_Karang_Taruna', 'landscape');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
@@ -70,12 +95,28 @@ export default function AnggotaAdmin() {
           </h1>
           <p className="text-gray-500 mt-1">Kelola data keanggotaan Karang Taruna.</p>
         </div>
-        <button 
-          onClick={handleAdd}
-          className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-bold flex items-center shadow-lg shadow-primary-600/30 transition-all"
-        >
-          <Plus className="w-5 h-5 mr-2" /> Tambah Anggota
-        </button>
+        <div className="flex gap-2">
+          <button 
+            onClick={handleExportPDF}
+            className="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-3 rounded-xl font-bold flex items-center transition-all border border-red-200"
+            title="Unduh PDF"
+          >
+            <FileText className="w-5 h-5 mr-2" /> PDF
+          </button>
+          <button 
+            onClick={handleExportExcel}
+            className="bg-green-50 hover:bg-green-100 text-green-600 px-4 py-3 rounded-xl font-bold flex items-center transition-all border border-green-200"
+            title="Unduh Excel"
+          >
+            <Download className="w-5 h-5 mr-2" /> Excel
+          </button>
+          <button 
+            onClick={handleAdd}
+            className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-bold flex items-center shadow-lg shadow-primary-600/30 transition-all"
+          >
+            <Plus className="w-5 h-5 mr-2" /> Tambah Anggota
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">

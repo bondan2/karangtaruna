@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { FileText, Plus, Edit, Trash2, XCircle, Search, Download } from 'lucide-react';
+import { FileText, Plus, Edit, Trash2, XCircle, Search, Download, FileJson } from 'lucide-react';
+import { exportToExcel, exportToPDF } from '../../utils/exportUtils';
 
 export default function SuratAdmin({ jenisSurat }) {
   const [surat, setSurat] = useState([]);
@@ -127,6 +128,31 @@ export default function SuratAdmin({ jenisSurat }) {
     setIsModalOpen(true);
   };
 
+  const handleExportExcel = () => {
+    const dataToExport = filteredSurat.map((item, index) => ({
+      'No': index + 1,
+      'Nomor Surat': item.nomor_surat,
+      'Tanggal': new Date(item.tanggal_surat).toLocaleDateString('id-ID'),
+      'Jenis': item.jenis_surat,
+      'Perihal': item.perihal,
+      'Pihak Terkait': item.pengirim_penerima || '-'
+    }));
+    exportToExcel(dataToExport, `Arsip_Surat_${jenisSurat}`);
+  };
+
+  const handleExportPDF = () => {
+    const headers = ['No', 'Nomor Surat', 'Tanggal', 'Jenis', 'Perihal', 'Pihak Terkait'];
+    const dataToExport = filteredSurat.map((item, index) => [
+      index + 1,
+      item.nomor_surat,
+      new Date(item.tanggal_surat).toLocaleDateString('id-ID'),
+      item.jenis_surat,
+      item.perihal,
+      item.pengirim_penerima || '-'
+    ]);
+    exportToPDF(headers, dataToExport, `Register Surat ${jenisSurat}`, `Buku_Agenda_Surat_${jenisSurat}`, 'landscape');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100 gap-4">
@@ -155,6 +181,20 @@ export default function SuratAdmin({ jenisSurat }) {
               className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm font-medium"
             />
           </div>
+          <button 
+            onClick={handleExportPDF}
+            className="flex items-center px-4 py-2 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors shadow-sm whitespace-nowrap border border-red-200"
+            title="Unduh PDF"
+          >
+            <FileText className="w-5 h-5 md:mr-1" /> <span className="hidden md:inline">PDF</span>
+          </button>
+          <button 
+            onClick={handleExportExcel}
+            className="flex items-center px-4 py-2 bg-green-50 text-green-600 font-bold rounded-xl hover:bg-green-100 transition-colors shadow-sm whitespace-nowrap border border-green-200"
+            title="Unduh Excel"
+          >
+            <FileJson className="w-5 h-5 md:mr-1" /> <span className="hidden md:inline">Excel</span>
+          </button>
           <button 
             onClick={openNewModal}
             className="flex items-center px-4 py-2 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-sm whitespace-nowrap"

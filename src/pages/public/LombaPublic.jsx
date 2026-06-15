@@ -16,9 +16,28 @@ export default function LombaPublic() {
   const [pesertaList, setPesertaList] = useState([]);
   const [selectedLombaPeserta, setSelectedLombaPeserta] = useState(null);
 
+  // State for pemenang
+  const [pemenang, setPemenang] = useState([]);
+
   useEffect(() => {
     fetchLomba();
+    fetchPemenang();
   }, []);
+
+  const fetchPemenang = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('peserta_lomba')
+        .select('*, lomba(nama_lomba)')
+        .not('status_juara', 'is', null)
+        .neq('status_juara', '');
+      
+      if (error) throw error;
+      setPemenang(data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchLomba = async () => {
     try {
@@ -160,13 +179,33 @@ export default function LombaPublic() {
                 <p className="text-gray-500 text-sm mt-2 md:mt-0">Daftar para juara lomba sebelumnya.</p>
               </div>
               
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <div className="w-24 h-24 bg-yellow-50 rounded-full flex items-center justify-center mb-6">
-                    <Trophy className="w-10 h-10 text-yellow-400" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-3">Belum Ada Pengumuman</h3>
-                  <p className="text-gray-500 max-w-md">Belum ada daftar juara lomba yang diterbitkan saat ini.</p>
-              </div>
+              {pemenang.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <div className="w-24 h-24 bg-yellow-50 rounded-full flex items-center justify-center mb-6">
+                      <Trophy className="w-10 h-10 text-yellow-400" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-800 mb-3">Belum Ada Pengumuman</h3>
+                    <p className="text-gray-500 max-w-md">Belum ada daftar juara lomba yang diterbitkan saat ini.</p>
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {pemenang.map(item => (
+                    <div key={item.id} className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-6 border border-yellow-200 shadow-sm flex items-start">
+                      <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center mr-4 flex-shrink-0 text-yellow-900 shadow-inner">
+                        <Trophy className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <span className="inline-block px-2 py-1 bg-yellow-200 text-yellow-800 text-xs font-black uppercase rounded mb-2 border border-yellow-300">
+                          {item.status_juara}
+                        </span>
+                        <h4 className="font-black text-gray-900 text-lg leading-tight mb-1">{item.nama_peserta}</h4>
+                        <p className="text-sm text-gray-600 font-medium mb-1">{item.asal_rt_rw}</p>
+                        <p className="text-xs font-bold text-primary-600 uppercase tracking-wide">{item.lomba?.nama_lomba}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

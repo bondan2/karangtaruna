@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { BarChart3, TrendingUp, TrendingDown, Wallet, Calendar } from 'lucide-react';
+import { BarChart3, TrendingUp, TrendingDown, Wallet, Calendar, FileText, Download } from 'lucide-react';
+import { exportToExcel, exportToPDF } from '../../utils/exportUtils';
 
 export default function KeuanganLaporan({ rentang }) {
   const [transaksi, setTransaksi] = useState([]);
@@ -94,6 +95,31 @@ export default function KeuanganLaporan({ rentang }) {
     );
   };
 
+  const handleExportExcel = () => {
+    const dataToExport = filteredData.map((item, index) => ({
+      'No': index + 1,
+      'Tanggal': new Date(item.tanggal).toLocaleDateString('id-ID'),
+      'Kategori': item.kategori,
+      'Keterangan': item.keterangan,
+      'Debit (Masuk)': item.jenis_transaksi === 'Pemasukan' ? Number(item.nominal) : 0,
+      'Kredit (Keluar)': item.jenis_transaksi === 'Pengeluaran' ? Number(item.nominal) : 0
+    }));
+    exportToExcel(dataToExport, `Laporan_Keuangan_${rentang}`);
+  };
+
+  const handleExportPDF = () => {
+    const headers = ['No', 'Tanggal', 'Kategori', 'Keterangan', 'Debit (Masuk)', 'Kredit (Keluar)'];
+    const dataToExport = filteredData.map((item, index) => [
+      index + 1,
+      new Date(item.tanggal).toLocaleDateString('id-ID'),
+      item.kategori,
+      item.keterangan,
+      item.jenis_transaksi === 'Pemasukan' ? formatRupiah(item.nominal) : '-',
+      item.jenis_transaksi === 'Pengeluaran' ? formatRupiah(item.nominal) : '-'
+    ]);
+    exportToPDF(headers, dataToExport, `Buku Kas Karang Taruna - ${rentang}`, `Laporan_Keuangan_${rentang}`, 'portrait');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
@@ -105,6 +131,22 @@ export default function KeuanganLaporan({ rentang }) {
             <h1 className="text-2xl font-black text-gray-900 tracking-tight">Laporan Keuangan {rentang}</h1>
             <p className="text-sm text-gray-500 font-medium">Rekapitulasi arus kas organisasi {rentang === 'Rekap Kas' ? 'secara keseluruhan' : 'berdasarkan periode'}</p>
           </div>
+        </div>
+        <div className="flex gap-2">
+          <button 
+            onClick={handleExportPDF}
+            className="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-3 rounded-xl font-bold flex items-center transition-all border border-red-200"
+            title="Unduh PDF"
+          >
+            <FileText className="w-5 h-5 mr-2" /> PDF
+          </button>
+          <button 
+            onClick={handleExportExcel}
+            className="bg-green-50 hover:bg-green-100 text-green-600 px-4 py-3 rounded-xl font-bold flex items-center transition-all border border-green-200"
+            title="Unduh Excel"
+          >
+            <Download className="w-5 h-5 mr-2" /> Excel
+          </button>
         </div>
       </div>
 

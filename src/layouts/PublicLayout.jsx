@@ -1,12 +1,35 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Menu, X, MapPin, Lock, User } from 'lucide-react';
+import { Menu, X, MapPin, Lock, User, LayoutDashboard } from 'lucide-react';
 import { FaInstagram, FaYoutube } from 'react-icons/fa';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import logo from '../assets/img/logo.png';
 
 export default function PublicLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const [kontak, setKontak] = useState({});
+  const [profil, setProfil] = useState({});
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    fetchConfig();
+    checkUser();
+  }, []);
+
+  const checkUser = () => {
+    const role = localStorage.getItem('userRole');
+    if (role) setUserRole(role);
+  };
+
+  const fetchConfig = async () => {
+    const [resKontak, resProfil] = await Promise.all([
+      supabase.from('kontak').select('*').single(),
+      supabase.from('profil_website').select('deskripsi_singkat').single()
+    ]);
+    if (resKontak.data) setKontak(resKontak.data);
+    if (resProfil.data) setProfil(resProfil.data);
+  };
 
   const navigation = [
     { name: 'BERANDA', href: '/' },
@@ -32,14 +55,20 @@ export default function PublicLayout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <MapPin className="w-3.5 h-3.5" />
-            <span>Jl. Raya Pondok Betung, Rt.001/05, Kel. Pondok Betung, Kec. Pondok Aren, Kota Tangerang Selatan, Banten</span>
+            <span className="truncate max-w-sm">{kontak.alamat || 'Memuat alamat...'}</span>
           </div>
           <div className="flex items-center space-x-4">
-            <a href="#" className="hover:text-primary-200 transition-colors"><FaInstagram className="w-4 h-4" /></a>
-            <a href="#" className="hover:text-primary-200 transition-colors"><FaYoutube className="w-4 h-4" /></a>
-            <Link to="/login" className="flex items-center font-bold hover:text-primary-200 transition-colors ml-4 border-l border-white/20 pl-4">
-              <Lock className="w-3 h-3 mr-1.5" /> LOGIN CMS
-            </Link>
+            {kontak.instagram && <a href={kontak.instagram} target="_blank" rel="noreferrer" className="hover:text-primary-200 transition-colors"><FaInstagram className="w-4 h-4" /></a>}
+            {kontak.youtube && <a href={kontak.youtube} target="_blank" rel="noreferrer" className="hover:text-primary-200 transition-colors"><FaYoutube className="w-4 h-4" /></a>}
+            {userRole ? (
+              <Link to="/dashboard" className="flex items-center font-bold hover:text-primary-200 transition-colors ml-4 border-l border-white/20 pl-4">
+                <LayoutDashboard className="w-3 h-3 mr-1.5" /> KE DASHBOARD
+              </Link>
+            ) : (
+              <Link to="/login" className="flex items-center font-bold hover:text-primary-200 transition-colors ml-4 border-l border-white/20 pl-4">
+                <Lock className="w-3 h-3 mr-1.5" /> LOGIN CMS
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -80,11 +109,17 @@ export default function PublicLayout() {
               ))}
             </div>
 
-            {/* Login Button (Desktop) */}
+            {/* Login/Dashboard Button (Desktop) */}
             <div className="hidden lg:flex items-center ml-8">
-              <Link to="/login" className="flex items-center justify-center px-6 py-2.5 bg-primary-700 text-white rounded-lg font-bold text-sm shadow-md hover:bg-primary-800 transition-colors">
-                <User className="w-4 h-4 mr-2" /> LOGIN
-              </Link>
+              {userRole ? (
+                <Link to="/dashboard" className="flex items-center justify-center px-6 py-2.5 bg-primary-700 text-white rounded-lg font-bold text-sm shadow-md hover:bg-primary-800 transition-colors">
+                  <LayoutDashboard className="w-4 h-4 mr-2" /> DASHBOARD
+                </Link>
+              ) : (
+                <Link to="/login" className="flex items-center justify-center px-6 py-2.5 bg-primary-700 text-white rounded-lg font-bold text-sm shadow-md hover:bg-primary-800 transition-colors">
+                  <User className="w-4 h-4 mr-2" /> LOGIN
+                </Link>
+              )}
             </div>
 
             {/* Mobile menu button */}
@@ -120,13 +155,23 @@ export default function PublicLayout() {
               ))}
               
               <div className="mt-4 pt-4 border-t border-gray-100">
-                <Link
-                  to="/login"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-center w-full px-4 py-3 bg-primary-700 text-white rounded-xl font-bold shadow-md"
-                >
-                  <User className="w-5 h-5 mr-2" /> LOGIN
-                </Link>
+                {userRole ? (
+                  <Link
+                    to="/dashboard"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-center w-full px-4 py-3 bg-primary-700 text-white rounded-xl font-bold shadow-md"
+                  >
+                    <LayoutDashboard className="w-5 h-5 mr-2" /> KE DASHBOARD
+                  </Link>
+                ) : (
+                  <Link
+                    to="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-center w-full px-4 py-3 bg-primary-700 text-white rounded-xl font-bold shadow-md"
+                  >
+                    <User className="w-5 h-5 mr-2" /> LOGIN
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -144,20 +189,24 @@ export default function PublicLayout() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
             <div>
               <h5 className="text-white text-lg font-bold mb-6 uppercase tracking-wider">Tentang Kami</h5>
-              <p className="max-w-md leading-relaxed">
-                Karang Taruna Bina Pemuda adalah wadah pembinaan dan pengembangan generasi muda yang tumbuh berbasis pada kesadaran dan tanggung jawab sosial.
+              <p className="max-w-md leading-relaxed text-sm">
+                {profil.deskripsi_singkat || 'Karang Taruna Bina Pemuda adalah wadah pembinaan dan pengembangan generasi muda yang tumbuh berbasis pada kesadaran dan tanggung jawab sosial.'}
               </p>
             </div>
             <div>
               <h5 className="text-white text-lg font-bold mb-6 uppercase tracking-wider">Alamat & Kontak</h5>
-              <p className="mb-4">Jl. Raya Pondok Betung, Rt.001/05, Kel. Pondok Betung, Kec. Pondok Aren, Kota Tangerang Selatan, Banten</p>
+              <p className="mb-4 text-sm">{kontak.alamat || 'Jl. Raya Pondok Betung...'}</p>
               <div className="flex space-x-3 mt-6">
-                <a href="#" className="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center hover:bg-primary-600 hover:border-primary-600 hover:text-white transition-all">
-                  <FaInstagram className="w-5 h-5" />
-                </a>
-                <a href="#" className="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center hover:bg-primary-600 hover:border-primary-600 hover:text-white transition-all">
-                  <FaYoutube className="w-5 h-5" />
-                </a>
+                {kontak.instagram && (
+                  <a href={kontak.instagram} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center hover:bg-primary-600 hover:border-primary-600 hover:text-white transition-all">
+                    <FaInstagram className="w-5 h-5" />
+                  </a>
+                )}
+                {kontak.youtube && (
+                  <a href={kontak.youtube} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center hover:bg-primary-600 hover:border-primary-600 hover:text-white transition-all">
+                    <FaYoutube className="w-5 h-5" />
+                  </a>
+                )}
               </div>
             </div>
           </div>

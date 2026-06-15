@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowRight, Download, FileText, Phone, User, ChevronRight, Calendar, Users, Handshake, Trophy } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Download, FileText, Phone, User, ChevronRight, Calendar, Users, Handshake, Trophy, Image as ImageIcon } from 'lucide-react';
 import { FaYoutube, FaInstagram } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -89,17 +89,18 @@ export default function Home() {
       }
 
       // 6. Fetch Statistik (Count)
-      const [{ count: cAnggota }, { count: cProgram }, { count: cEvent }] = await Promise.all([
+      const [{ count: cAnggota }, { count: cProgram }, { count: cEvent }, { count: cPrestasi }] = await Promise.all([
         supabase.from('anggota').select('*', { count: 'exact', head: true }),
         supabase.from('program_kerja').select('*', { count: 'exact', head: true }),
-        supabase.from('event_17_agustus').select('*', { count: 'exact', head: true })
+        supabase.from('event_17_agustus').select('*', { count: 'exact', head: true }),
+        supabase.from('peserta_lomba').select('*', { count: 'exact', head: true }).neq('status_juara', '')
       ]);
       
       setStatistik({
         anggota: cAnggota || 0,
         kegiatan: cEvent || 0,
         program: cProgram || 0,
-        prestasi: 12 // Hardcode for now
+        prestasi: cPrestasi || 0
       });
 
     } catch (error) {
